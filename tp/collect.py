@@ -122,7 +122,6 @@ EVERY = {  # имя -> (путь, период в минутах, parquet из �
     "ls_markets": ("/long-short/markets", 5, "markets"),
     "pulse": ("/liquidations/pulse", 15, None),
     "oi_deltas": ("/open-interest/deltas", 60, None),
-    "oi_by_exchange": ("/open-interest/by-exchange", 60, None),
     "market_overview": ("/market-overview", 60, None),
     "altcoin_season": ("/altcoin-season", 60, None),
     "global_metrics": ("/global-metrics", 60, None),
