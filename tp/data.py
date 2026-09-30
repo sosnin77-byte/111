@@ -55,8 +55,12 @@ def _candles(sym: str, tf: str, raw: Path) -> pd.DataFrame | None:
     return c
 
 
-def _last_on(series: pd.Series, index: pd.DatetimeIndex, tf: str) -> pd.Series:
-    """Значение ряда на закрытии каждого бара (последняя точка не позже конца бара)."""
+def _last_on(series: pd.Series, index: pd.DatetimeIndex, tf: str,
+             max_age: pd.Timedelta | None = None) -> pd.Series:
+    """Значение ряда на закрытии каждого бара (последняя точка не позже конца бара).
+
+    max_age — сколько после последней точки ряда значение ещё считается актуальным
+    (по умолчанию один бар)."""
     end = index + pd.Timedelta(TF_RULE[tf])
     s = series.dropna()
     if s.empty:
@@ -67,7 +71,7 @@ def _last_on(series: pd.Series, index: pd.DatetimeIndex, tf: str) -> pd.Series:
     out = pd.Series(vals, index)
     # не протягиваем значение, если ряд ещё не начался или давно кончился
     out[end <= s.index[0]] = np.nan
-    out[index > s.index[-1] + pd.Timedelta(TF_RULE[tf])] = np.nan
+    out[index > s.index[-1] + (max_age if max_age is not None else pd.Timedelta(TF_RULE[tf]))] = np.nan
     return out
 
 
@@ -98,9 +102,13 @@ def load(sym: str, tf: str = "1h", raw: Path = RAW) -> pd.DataFrame | None:
     f = _read("funding", sym, raw)
     if f is not None:
         rate = _num(f, "rate")
+        # метки выплат гуляют на миллисекунды (07:59:59.999): округляем до минуты
+        rate.index = rate.index.round("1min")
+        rate = rate[~rate.index.duplicated(keep="last")]
         c["fund"] = _sum_on(rate, idx, tf).fillna(0.0)
         c.loc[idx < rate.index[0], "fund"] = 0.0
-        c["fund_last"] = _last_on(rate, idx, tf)
+        # ставка действует до следующей выплаты (интервал до 8 часов)
+        c["fund_last"] = _last_on(rate, idx, tf, max_age=pd.Timedelta("9h"))
     else:
         c["fund"] = 0.0
         c["fund_last"] = np.nan
