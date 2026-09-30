@@ -67,8 +67,8 @@ def registry_status() -> list[str]:
     f = ROOT / "HYPOTHESES.md"
     if not f.exists():
         return ["  нет HYPOTHESES.md"]
-    rows = [l for l in f.read_text().splitlines() if l.startswith("| ") and not l.startswith("| ---")
-            and not l.startswith("| Имя") and not l.startswith("| id") and not l.startswith("| Правило")]
+    rows = [ln for ln in f.read_text().splitlines() if ln.startswith("| ") and not ln.startswith("| ---")
+            and not ln.startswith("| Имя") and not ln.startswith("| id") and not ln.startswith("| Правило")]
     keys = ["кандидат", "отбор", "к проверке", "доработать", "идея", "код", "отброшена", "отсеяна", "на грани",
             "противоречиво", "разобрать"]
     cnt = {k: sum(k in r.lower() for r in rows) for k in keys}
