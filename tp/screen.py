@@ -19,6 +19,9 @@
    p = доля подмен с результатом не хуже. Подмены проходят тот же перебор геометрий, поэтому
    поиск лучшей ячейки не даёт ложного преимущества; все геометрии пробуются, поэтому
    неудачная геометрия не скрывает рабочую гипотезу.
+4. Тип преимущества (edge_type): направление должно обыгрывать подмену направления; дальше
+   «момент» — обыгрывает ту же монету в другое время, «выбор монеты» — другую монету в тот же
+   момент, «момент и монета» — обе. Рыночный тайминг засчитывается.
 
 Сигналы пересекаются во времени и между монетами, t-статистики завышены одинаково для
 настоящих сигналов и подмен (подмена монеты сохраняет моменты, подмена момента — монету),
@@ -194,6 +197,24 @@ def stats(S: dict) -> dict:
 
 
 STATS = ("best_t", "plateau_t", "breadth")
+SCREEN_P = 0.2        # мягкий порог первичного отбора
+
+
+def edge_type(p: dict, thr: float) -> str | None:
+    """Тип преимущества по p-значениям подмен. Направление обязательно (иначе прибыль даёт
+    волатильность, а не прогноз). Момент — лучше той же монеты в другое время; монета — лучше
+    другой монеты в тот же момент. Рыночный тайминг (каскад отскакивает у всех монет сразу)
+    не проигрывает подмене монеты, но это настоящее преимущество, поэтому тоже засчитывается."""
+    if p["dir"] > thr:
+        return None
+    timing, coin = p["time"] <= thr, p["coin"] <= thr
+    if timing and coin:
+        return "момент и монета"
+    if timing:
+        return "момент (рыночный)"
+    if coin:
+        return "выбор монеты"
+    return None
 
 
 def screen_variant(pool: Pool, vi: int, runs: int = 100, seed: int = 3) -> dict:
@@ -235,8 +256,8 @@ def screen_variant(pool: Pool, vi: int, runs: int = 100, seed: int = 3) -> dict:
                       else 1.0, "null_mean": float(v.mean()) if len(v) else None,
                       "null_p90": float(np.quantile(v, 0.9)) if len(v) else None}
         out[kind] = res
-    # проходит первичный отбор: плато обыгрывает все три подмены с p <= 0.2
-    out["pass"] = all(out[k]["plateau_t"]["p"] <= 0.2 for k in KINDS)
+    out["edge_type"] = edge_type({k: out[k]["plateau_t"]["p"] for k in KINDS}, SCREEN_P)
+    out["pass"] = out["edge_type"] is not None
     return out
 
 
@@ -252,7 +273,8 @@ def screen_setup(setup, uni, runs: int = 100, costs: Costs = Costs(), log=print)
     res["pass"] = any(v["pass"] for v in res["variants"])
     RESULTS.mkdir(parents=True, exist_ok=True)
     (RESULTS / f"{setup.name}.json").write_text(json.dumps(res, ensure_ascii=False, default=str))
-    log(f"{setup.name:28s} {'ПРОХОДИТ' if res['pass'] else '—':9s} "
+    types = sorted({v["edge_type"] for v in res["variants"] if v["edge_type"]})
+    log(f"{setup.name:28s} {', '.join(types) if types else '—':20s} "
         + " | ".join(f"{v['variant']}: плато t={v['real']['plateau_t']:.2f} p(монета/момент/напр)="
                      f"{v['coin']['plateau_t']['p']:.2f}/{v['time']['plateau_t']['p']:.2f}/"
                      f"{v['dir']['plateau_t']['p']:.2f}" for v in res["variants"])

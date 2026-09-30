@@ -5,7 +5,8 @@
 
 Контрольные проверки (tp/placebo.py): для всех вариантов — вход без сетки выходов против
 подмены монеты, момента и направления; для отобранных комбинаций — то же с их выходами на
-отложенном периоде (control_pass: обыгрывают подмену монеты и момента с p <= CONTROL_P);
+отложенном периоде (control_pass и edge_type: обыгрывают подмену направления и момента
+и/или монеты с p <= CONTROL_P);
 и вся процедура отбора на подменённых сигналах (null): сколько даёт отбор на шуме.
 
 Результаты: results/<setup>.json (метрики всех комбинаций и 5 лучших) и
@@ -39,7 +40,7 @@ IS_TOP = 20                 # сколько лучших по оптимиза�
 CONTROL_RUNS = 100          # подмен на каждую отобранную комбинацию и каждый вид подмены
 ENTRY_RUNS = 30             # подмен для контроля входа без выходов (все варианты всех сетапов)
 NULL_RUNS = 20              # прогонов всей процедуры отбора на подменённых сигналах
-CONTROL_P = 0.10            # отобранная комбинация должна обыгрывать подмены с p <= CONTROL_P
+CONTROL_P = 0.10            # строгий порог контроля на отложенном периоде (тип — screen.edge_type)
 
 TIME_EXITS = {"5m": (24, 72, 144), "15m": (16, 48, 96), "1h": (12, 24, 48), "4h": (6, 12, 24)}
 
@@ -135,6 +136,7 @@ def run_control(setup, uni, exits, best, best_long, costs, log) -> dict:
     """Контрольные проверки: вход без выходов для всех вариантов, полный контроль отобранных
     комбинаций (подмена монеты, момента, направления), отбор на шуме."""
     from .placebo import KINDS, Pool, control, entry_control, null_selection
+    from .screen import edge_type
     t0 = time.time()
     pool = Pool(setup, uni, costs)
     out = {"entry": [entry_control(pool, vi, ENTRY_RUNS) for vi in range(len(setup.variants))]}
@@ -145,7 +147,8 @@ def run_control(setup, uni, exits, best, best_long, costs, log) -> dict:
             c["control"] = {k: {"oos_p": ctl[k]["oos"]["p"], "oos_mean": ctl[k]["oos"]["mean"],
                                 "oos_p95": ctl[k]["oos"]["p95"], "all_p": ctl[k]["all"]["p"],
                                 "forward_p": ctl[k]["forward_p"]} for k in KINDS}
-            c["control_pass"] = all(c["control"][k]["oos_p"] <= CONTROL_P for k in ("coin", "time"))
+            c["edge_type"] = edge_type({k: c["control"][k]["oos_p"] for k in KINDS}, CONTROL_P)
+            c["control_pass"] = c["edge_type"] is not None
     if best or best_long:
         nul = null_selection(pool, exits, "time", NULL_RUNS,
                              select_fn=lambda cs: select(cs, "is", "oos"))
