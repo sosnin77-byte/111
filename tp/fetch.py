@@ -43,10 +43,9 @@ def _ms(s: str) -> int:
 
 # имя набора -> (путь, шаг ряда, limit, доп. параметры, начало)
 def datasets(sym: str) -> dict:
-    coin = sym.removesuffix("USDT")
     return {
         "candles_1h": (f"/candles/{EX}/{sym}", "1h", 1000, {"interval": "1h"}, HISTORY_START),
-        "candles_5m": (f"/candles/{EX}/{sym}", "5m", 1000, {"interval": "5m"}, "2026-04-01"),
+        "candles_5m": (f"/candles/{EX}/{sym}", "5m", 1000, {"interval": "5m"}, "2026-03-05"),
         "funding": (f"/funding/{EX}/{sym}", "1h", 1000, {}, HISTORY_START),
         "oi_1h": (f"/open-interest/{EX}/{sym}", "1h", 1000, {"interval": "1h"}, "2026-03-15"),
         "oi_5m": (f"/open-interest/{EX}/{sym}", "5m", 1000, {"interval": "5m"}, "2026-04-01"),
@@ -63,6 +62,23 @@ def datasets(sym: str) -> dict:
         "hl_1h": (f"/candles/hyperliquid/{sym}", "1h", 1000, {"interval": "1h"}, HISTORY_START),
         "cb_1h": (f"/candles/coinbase/{sym}", "1h", 1000, {"interval": "1h"}, HISTORY_START),
         "funding_bybitf": (f"/funding/bybitf/{sym}", "1h", 1000, {}, HISTORY_START),
+        # вторая очередь аудита API (ночная выгрузка, scripts/api_queue.sh)
+        "spot_5m": (f"/candles/binance/{sym}", "5m", 1000, {"interval": "5m"}, "2026-03-05"),
+        "oi_all_1h": (f"/open-interest/all/{sym}", "1h", 1000, {"interval": "1h"}, "2026-04-13"),
+        "oi_all_5m": (f"/open-interest/all/{sym}", "5m", 1000, {"interval": "5m"}, "2026-06-03"),
+        **{f"fund_{ex}": (f"/funding/{ex}/{sym}", "1h", 10000, {}, HISTORY_START)
+           for ex in ("okx", "hyperliquid", "aster", "bitget", "gate", "htx")},
+        "ls_topacc": (f"/long-short/{EX}/{sym}", "5m", 5000,
+                      {"ratio_type": "top_account", "period": "5m"}, "2026-04-01"),
+        **{f"ls_{ex}": (f"/long-short/{ex}/{sym}", "5m", 5000,
+                        {"ratio_type": "global_account", "period": "5m"}, "2026-07-01")
+           for ex in ("bybitf", "okx", "gate")},
+        **{f"cvd_{ex}_1h": (f"/cvd/{ex}/{sym}", "1h", 1000, {"interval": "1h"}, "2026-06-01")
+           for ex in ("bybitf", "okx", "coinbase")},
+        **{f"liq_{ex}_5m": (f"/liquidations/{sym}/bars", "5m", 10000,
+                            {"interval": "5m", "exchange": ex}, "2026-06-01")
+           for ex in ("binancef", "bybitf", "okx")},
+        "candles_1m": (f"/candles/{EX}/{sym}", "1m", 1000, {"interval": "1m"}, "2026-06-02"),
     }
 
 
@@ -74,17 +90,34 @@ def path_for(name: str, sym: str) -> Path:
     return RAW / name / f"{sym}.parquet"
 
 
-def fetch_one(client: Client, sym: str, name: str, end_ms: int) -> int:
+NODATA = RAW / "_nodata.txt"  # «набор\tмонета», где сервер ответил 404: не спрашивать снова
+
+
+def _nodata() -> set[str]:
+    return set(NODATA.read_text().split("\n")) if NODATA.exists() else set()
+
+
+def fetch_one(client: Client, sym: str, name: str, end_ms: int, backfill: bool = False) -> int:
     path, step, limit, params, start = datasets(sym)[name]
     f = path_for(name, sym)
     old = pd.read_parquet(f) if f.exists() else None
     start_ms = _ms(start)
     if old is not None and len(old):
-        start_ms = int(old["time"].max()) + 1
+        first, last = int(old["time"].min()), int(old["time"].max())
+        if backfill and first - INTERVAL_MS[step] > start_ms:
+            end_ms = first - 1  # только голова ряда; хвост допишет обычный запуск
+        else:
+            start_ms = last + 1
     if start_ms > end_ms:
         return 0
     # фандинг идёт раз в 8 (иногда 4 или 1) часов, окно в limit часов заведомо без обрезки
-    rows = fetch_range(client, path, start_ms, end_ms, INTERVAL_MS[step], limit, **params)
+    try:
+        rows = fetch_range(client, path, start_ms, end_ms, INTERVAL_MS[step], limit, **params)
+    except ApiError as e:
+        if str(e).startswith("404"):
+            with open(NODATA, "a") as fh:
+                fh.write(f"{name}\t{sym}\n")
+        raise
     if not rows:
         return 0
     df = pd.DataFrame(rows)
@@ -159,6 +192,7 @@ def main():
     ap.add_argument("--sets", nargs="*", help="какие наборы качать (по умолчанию все)")
     ap.add_argument("--rpm", type=int, default=580)
     ap.add_argument("--workers", type=int, default=14)
+    ap.add_argument("--backfill", action="store_true", help="докачать начало рядов до заданного старта")
     a = ap.parse_args()
     client = Client(rpm=a.rpm)
     if a.cmd == "account":
@@ -170,10 +204,11 @@ def main():
     syms = a.only or load_universe(a.universe)
     names = a.sets or [n for n in datasets("BTCUSDT") if n in BASE_SETS]
     end = int(time.time() * 1000)
-    jobs = [(s, n) for s in syms for n in names]
+    skip = _nodata()
+    jobs = [(s, n) for s in syms for n in names if f"{n}\t{s}" not in skip]
     t0 = time.time()
     with ThreadPoolExecutor(a.workers) as pool:
-        futs = {pool.submit(fetch_one, client, s, n, end): (s, n) for s, n in jobs}
+        futs = {pool.submit(fetch_one, client, s, n, end, a.backfill): (s, n) for s, n in jobs}
         for i, fu in enumerate(as_completed(futs), 1):
             s, n = futs[fu]
             try:
