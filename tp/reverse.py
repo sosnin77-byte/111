@@ -332,9 +332,14 @@ def main():
         return
     rules = json.loads((OUT / f"rules_{a.universe}.json").read_text())
     good = [r for r in rules if _good(r)]
-    # разнообразие: не больше 3 правил на метку
-    pick, per = [], {}
+    # разнообразие: не больше 3 правил на метку; одинаковые условия с тем же направлением
+    # (разные k или H) дают одинаковые сигналы — проверяем один раз
+    pick, per, seen = [], {}, set()
     for r in good:
+        key = (r["label"][:2], tuple(tuple(c) for c in sorted(r["conds"])))
+        if key in seen:
+            continue
+        seen.add(key)
         if per.get(r["label"], 0) < 3:
             pick.append(r)
             per[r["label"]] = per.get(r["label"], 0) + 1
