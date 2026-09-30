@@ -3,6 +3,11 @@
     python -m tp.research                     # все сетапы по data/universe.json
     python -m tp.research --setups sweep --only BTCUSDT ETHUSDT
 
+Контрольные проверки (tp/placebo.py): для всех вариантов — вход без сетки выходов против
+подмены монеты, момента и направления; для отобранных комбинаций — то же с их выходами на
+отложенном периоде (control_pass: обыгрывают подмену монеты и момента с p <= CONTROL_P);
+и вся процедура отбора на подменённых сигналах (null): сколько даёт отбор на шуме.
+
 Результаты: results/<setup>.json (метрики всех комбинаций и 5 лучших) и
 results/<setup>_trades.parquet (сделки лучших комбинаций, для кривых капитала).
 """
@@ -29,6 +34,12 @@ MIN_TRADES = 50
 MIN_PF = 1.3
 MAX_DD_SHARE = 1 / 3        # просадка не больше трети прибыли
 IS_TOP = 20                 # сколько лучших по оптимизации проверяем на отложенном периоде
+
+# Контрольные проверки (tp/placebo.py)
+CONTROL_RUNS = 100          # подмен на каждую отобранную комбинацию и каждый вид подмены
+ENTRY_RUNS = 30             # подмен для контроля входа без выходов (все варианты всех сетапов)
+NULL_RUNS = 20              # прогонов всей процедуры отбора на подменённых сигналах
+CONTROL_P = 0.10            # отобранная комбинация должна обыгрывать подмены с p <= CONTROL_P
 
 TIME_EXITS = {"5m": (24, 72, 144), "15m": (16, 48, 96), "1h": (12, 24, 48), "4h": (6, 12, 24)}
 
@@ -120,7 +131,36 @@ class Universe:
                 yield s, self._c[k]
 
 
-def run_setup(setup: Setup, uni: Universe, costs: Costs = Costs(), log=print) -> dict:
+def run_control(setup, uni, exits, best, best_long, costs, log) -> dict:
+    """Контрольные проверки: вход без выходов для всех вариантов, полный контроль отобранных
+    комбинаций (подмена монеты, момента, направления), отбор на шуме."""
+    from .placebo import KINDS, Pool, control, entry_control, null_selection
+    t0 = time.time()
+    pool = Pool(setup, uni, costs)
+    out = {"entry": [entry_control(pool, vi, ENTRY_RUNS) for vi in range(len(setup.variants))]}
+    for lst, key in ((best, "oos"), (best_long, "oos_long")):
+        for c in lst:
+            ex = exits[c["exit"]]
+            ctl = control(pool, c["variant"], ex, CONTROL_RUNS)
+            c["control"] = {k: {"oos_p": ctl[k]["oos"]["p"], "oos_mean": ctl[k]["oos"]["mean"],
+                                "oos_p95": ctl[k]["oos"]["p95"], "all_p": ctl[k]["all"]["p"],
+                                "forward_p": ctl[k]["forward_p"]} for k in KINDS}
+            c["control_pass"] = all(c["control"][k]["oos_p"] <= CONTROL_P for k in ("coin", "time"))
+    if best or best_long:
+        nul = null_selection(pool, exits, "time", NULL_RUNS,
+                             select_fn=lambda cs: select(cs, "is", "oos"))
+        real_best = max((_score_is(c["is"]) for c in best), default=0.0)
+        nul["real_best_is_score"] = real_best
+        nul["p_is_score"] = float((1 + sum(x >= real_best for x in nul["best_is_score"]))
+                                  / (1 + len(nul["best_is_score"])))
+        nul["share_noise_runs_with_selection"] = float(np.mean([n > 0 for n in nul["n_selected"]]))
+        out["null"] = nul
+    log(f"  контроль: {time.time() - t0:.0f}s")
+    return out
+
+
+def run_setup(setup: Setup, uni: Universe, costs: Costs = Costs(), log=print,
+              control_on: bool = True) -> dict:
     exits = exit_grid(setup)
     oos = np.datetime64(pd.Timestamp(setup.oos_start, tz="UTC").tz_convert(None))
     trades = {}       # (variant, exit) -> список DataFrame
@@ -160,6 +200,7 @@ def run_setup(setup: Setup, uni: Universe, costs: Costs = Costs(), log=print) ->
             })
     best = select(combos, "is", "oos")
     best_long = select(combos, "is_long", "oos_long")
+    control = run_control(setup, uni, exits, best, best_long, costs, log) if control_on else {}
     # сделки лучших комбинаций для кривых капитала
     keep = {(c["variant"], c["exit"]) for c in best + best_long}
     if not keep:     # ничего не прошло — сохраняем лучшие по оптимизации для разбора
@@ -173,7 +214,7 @@ def run_setup(setup: Setup, uni: Universe, costs: Costs = Costs(), log=print) ->
         "setup": setup.name, "title": setup.title, "doc": setup.doc, "tf": setup.tf,
         "oos_start": setup.oos_start, "coins": n_coins, "combos": len(combos),
         "criteria": {"min_trades": MIN_TRADES, "min_pf": MIN_PF, "max_dd_share": MAX_DD_SHARE},
-        "best": best, "best_long": best_long, "all_combos": combos,
+        "best": best, "best_long": best_long, "control": control, "all_combos": combos,
     }
     (RESULTS / f"{setup.name}.json").write_text(
         json.dumps(out, ensure_ascii=False, indent=1, default=str))
@@ -202,6 +243,7 @@ def main():
     ap.add_argument("--setups", nargs="*")
     ap.add_argument("--only", nargs="*")
     ap.add_argument("--counts", action="store_true", help="только посчитать сигналы")
+    ap.add_argument("--no-control", action="store_true", help="без контрольных проверок")
     ap.add_argument("--pool", choices=["main", "hyp", "all"], default="main",
                     help="main — 11 сетапов tp/setups.py, hyp — 100 гипотез tp/hyp, all — все")
     a = ap.parse_args()
@@ -218,10 +260,12 @@ def main():
                       f"OOS {c['oos']:5d}  монет {c['coins']}", flush=True)
         return
     for s in ([BY_NAME[n] for n in a.setups] if a.setups else SETUPS):
-        r = run_setup(s, uni)
+        r = run_setup(s, uni, control_on=not a.no_control)
         print(f"  лучшие: {len(r['best'])}, лучшие лонги: {len(r['best_long'])}")
         for c in r["best"]:
-            print(f"   OOS {c['oos']} | IS {c['is']['net']} | {c['label']}")
+            ctl = c.get("control", {})
+            ps = " ".join(f"{k}:p={v['oos_p']:.2f}" for k, v in ctl.items())
+            print(f"   OOS {c['oos']} | IS {c['is']['net']} | {c['label']} | контроль {ps}")
 
 
 if __name__ == "__main__":
