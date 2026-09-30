@@ -60,3 +60,39 @@ def test_control_runs(pool):
         assert 0 < r[kind]["oos"]["p"] <= 1
     e = entry_control(pool, 0, runs=3)
     assert set(e) == {"real", "coin", "time", "dir"}
+
+
+def test_screen_kernel_matches_engine(pool):
+    """Карта первичного отбора считает сделку так же, как движок (рыночный вход, стоп, тейк, время)."""
+    from tp import screen as S
+    from tp.engine import Costs, Signals, simulate
+    from tp.placebo import Table
+    costs = Costs()
+    t = pool.table(0)
+    L = S.W_BARS["1h"] + max(S.H_GRID["1h"])
+    pairs = []
+    for j in range(min(len(t), 60)):
+        k, g, d = int(t.sym[j]), int(t.g[j]), int(t.dir[j])
+        i = int(pool.pos[g, k])
+        one = Table(*(np.array([v]) for v in (k, g, d, np.nan, 0, np.nan, 0, 0)))
+        P = S.paths(pool, one, L)
+        for x, y, h in ((1.0, 1.0, 24), (3.0, 1.5, 6), (0.5, 2.0, 72)):
+            r = simulate(pool.bars[k], Signals([i], [d]),
+                         Exit(sl_atr=y, tp_r=(x / y, 0, 0), tp_frac=(1, 0, 0), time_exit=h,
+                              sl_max_atr=10), costs)
+            s1, _, n = S._surface(*P[:5], np.array([0.0]), np.array([x]), np.array([y]),
+                                  np.array([h]), 6, costs.fee_maker, costs.fee_taker, costs.slip)
+            if len(r["pnl"]) and n[0, 0, 0, 0]:
+                pairs.append((r["pnl"][0] / 100, s1[0, 0, 0, 0]))
+    a = np.array(pairs)
+    assert len(a) > 50
+    assert np.abs(a[:, 0] - a[:, 1]).max() < 0.002       # фандинг и проскальзывание выхода — приближённо
+
+
+def test_screen_variant_runs(pool):
+    from tp import screen as S
+    r = S.screen_variant(pool, 0, runs=5)
+    assert set(("coin", "time", "dir", "real", "pass")) <= set(r)
+    assert r["signals_is"] > 0
+    for k in ("coin", "time", "dir"):
+        assert 0 < r[k]["plateau_t"]["p"] <= 1
