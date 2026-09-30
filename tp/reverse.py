@@ -21,6 +21,7 @@
 
     python -m tp.reverse discover            # results/reverse/rules.json
     python -m tp.reverse validate --top 15   # карта с подменами на проверочном отрезке
+    python -m tp.reverse full --rules 5 3 13 # полный перебор выходов с контролем (results/reverse/full)
 """
 from __future__ import annotations
 
@@ -310,7 +311,8 @@ def main():
     from .research import Universe
     from .screen import screen_variant, KINDS, SCREEN_P, edge_type
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["discover", "validate"])
+    ap.add_argument("cmd", choices=["discover", "validate", "full"])
+    ap.add_argument("--rules", nargs="*", help="full: номера правил из validated (revNN)")
     ap.add_argument("--universe", default="100")
     ap.add_argument("--top", type=int, default=15)
     ap.add_argument("--runs", type=int, default=30)
@@ -331,6 +333,23 @@ def main():
                   f"n={r['n']}/{r['val_n']} база {r['base']:.3f}  {describe(r)}")
         return
     rules = json.loads((OUT / f"rules_{a.universe}.json").read_text())
+    if a.cmd == "full":
+        # полный перебор выходов с контролем для выбранных правил (results/reverse/full/)
+        from . import research
+        picks = json.loads((OUT / f"picks_{a.universe}.json").read_text())
+        research.RESULTS = OUT / "full"
+        uni = Universe(load_universe(a.universe))
+        for q in a.rules:
+            r = picks[int(q)]
+            s_ = rule_setup(r, int(q))
+            out = research.run_setup(s_, uni)
+            print(f"rev{int(q):02d}: лучшие {len(out['best'])}, лонги {len(out['best_long'])}  {describe(r)}")
+            for c in out["best"] + out["best_long"]:
+                ctl = c.get("control", {})
+                print(f"   OOS {c['oos']['net']:.0f}$ PF {c['oos']['pf']} n={c['oos']['trades']} | IS {c['is']['net']:.0f}$ | "
+                      f"{c['label']} | p " + " ".join(f"{k}:{v['oos_p']:.2f}" for k, v in ctl.items())
+                      + f" | {c.get('edge_type')}", flush=True)
+        return
     good = [r for r in rules if _good(r)]
     # разнообразие: не больше 3 правил на метку; одинаковые условия с тем же направлением
     # (разные k или H) дают одинаковые сигналы — проверяем один раз
@@ -345,6 +364,7 @@ def main():
             per[r["label"]] = per.get(r["label"], 0) + 1
         if len(pick) == a.top:
             break
+    (OUT / f"picks_{a.universe}.json").write_text(json.dumps(pick, ensure_ascii=False))
     uni = Universe(load_universe(a.universe))
     res = []
     for q, r in enumerate(pick):
