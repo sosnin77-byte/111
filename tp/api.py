@@ -1,8 +1,9 @@
 """REST-клиент TRADER.PRO Data API с ограничением скорости и постраничной выгрузкой.
 
 Ключ берётся из переменной окружения TRADERPRO_API_KEY и передаётся в
-заголовке X-TP-API-Key. Лимит тарифа Pro 600 запросов в минуту на аккаунт,
-около половины занимает сервер пользователя, поэтому по умолчанию берём 240.
+заголовке X-TP-API-Key. Лимит тарифа Pro 600 запросов в минуту на аккаунт.
+Выгрузка в приоритете над сервером пользователя, поэтому по умолчанию берём
+580 и оставляем небольшой запас.
 """
 from __future__ import annotations
 
@@ -48,7 +49,7 @@ class RateLimiter:
 
 
 class Client:
-    def __init__(self, key: str | None = None, rpm: int = 240, timeout: int = 60):
+    def __init__(self, key: str | None = None, rpm: int = 580, timeout: int = 60):
         key = (key or os.environ.get("TRADERPRO_API_KEY", "")).strip()
         if not key:
             raise ApiError("TRADERPRO_API_KEY не задан")

@@ -28,7 +28,9 @@ UNIVERSE = ROOT / "universe.json"
 HISTORY_START = "2025-10-02"
 
 STABLE = {"USDCUSDT", "FDUSDUSDT", "TUSDUSDT", "USDPUSDT", "DAIUSDT", "BUSDUSDT",
-          "USDEUSDT", "EURUSDT", "BTCDOMUSDT", "DEFIUSDT", "XUSDUSDT", "USD1USDT"}
+          "USDEUSDT", "EURUSDT", "BTCDOMUSDT", "DEFIUSDT", "XUSDUSDT", "USD1USDT",
+          # токенизированное золото ведёт себя как золото, не как крипта
+          "PAXGUSDT", "XAUTUSDT"}
 
 
 def _ms(s: str) -> int:
@@ -84,11 +86,13 @@ def fetch_one(client: Client, sym: str, name: str, end_ms: int) -> int:
 
 def build_universe(client: Client, top: int = 100) -> list[str]:
     resp = client.get("/instruments", exchange=EX)
-    items = rows_of(resp) or resp.get("instruments", [])
+    # ответ: {"count": N, "exchanges": {"binancef": [{"symbol", "status", "has_data", ...}]}}
+    items = (resp.get("exchanges") or {}).get(EX) or rows_of(resp) or resp.get("instruments", [])
     syms = set()
     for it in items:
         s = it if isinstance(it, str) else (it.get("symbol") or it.get("id") or "")
-        if isinstance(it, dict) and it.get("exchange") not in (None, EX):
+        if isinstance(it, dict) and (it.get("status", "active") != "active"
+                                     or it.get("has_data") is False):
             continue
         if s.endswith("USDT") and s not in STABLE:
             syms.add(s)
@@ -110,7 +114,7 @@ def build_universe(client: Client, top: int = 100) -> list[str]:
     ranked = sorted(vols, key=vols.get, reverse=True)[:top]
     ROOT.mkdir(parents=True, exist_ok=True)
     UNIVERSE.write_text(json.dumps(
-        {"asof": pd.Timestamp.utcnow().isoformat(), "symbols": ranked,
+        {"asof": pd.Timestamp.now("UTC").isoformat(), "symbols": ranked,
          "quote_volume_30d": {s: vols[s] for s in ranked}}, indent=1))
     return ranked
 
@@ -124,8 +128,8 @@ def main():
     ap.add_argument("cmd", choices=["universe", "all", "account"])
     ap.add_argument("--only", nargs="*")
     ap.add_argument("--sets", nargs="*", help="какие наборы качать (по умолчанию все)")
-    ap.add_argument("--rpm", type=int, default=240)
-    ap.add_argument("--workers", type=int, default=4)
+    ap.add_argument("--rpm", type=int, default=580)
+    ap.add_argument("--workers", type=int, default=10)
     a = ap.parse_args()
     client = Client(rpm=a.rpm)
     if a.cmd == "account":
