@@ -39,7 +39,7 @@ const V = { type: 'object', properties: { verdicts: { type: 'array', items: { ty
   fix: { type: 'string' }, priority: { type: 'integer', minimum: 1, maximum: 5 } },
   required: ['id', 'verdict', 'reason', 'fix', 'priority'] } } }, required: ['verdicts'] }
 const [sk, tr] = await parallel([
-  () => agent(`You are a sceptical quant (read ${REPO}/PLAN.md, INSIGHTS.md, HYPOTHESES.md). For EACH item: implement / rework (how) / reject (no payer, look-ahead, untestable with our data, duplicate of existing or rejected work). Priority 1 = first. Russian.\nITEMS:\n${JSON.stringify(items)}`, { label: 'check:skeptic', phase: 'Check', schema: V }),
+  () => agent(`You are a sceptical quant (read ${REPO}/PLAN.md, INSIGHTS.md, HYPOTHESES.md). For EACH item: implement / rework (how) / reject (no payer, look-ahead, untestable with our data, duplicate of existing or rejected work). Priority 1 = first. Russian.\nITEMS:\n${JSON.stringify(items)}`, { label: 'check:skeptic', phase: 'Check', schema: V, model: 'sonnet' }),
   () => agent(`You are the project's SUPERTRADER: read ${REPO}/.claude/agents/supertrader.md and your knowledge base ${REPO}/.claude/agents/knowledge/supertrader.md. For EACH item judge as a live trader on Binance futures with small size: would it work in practice or is there a trap (execution, slippage on small caps, fake signals, crowd adaptation, stops inside noise, fees)? implement / rework (how) / reject; priority 1 = first. Russian.\nITEMS:\n${JSON.stringify(items)}`, { label: 'check:trader', phase: 'Check', schema: V }),
 ])
 const m = r => Object.fromEntries(((r && r.verdicts) || []).map(v => [v.id, v]))
@@ -47,5 +47,5 @@ const S = m(sk), T = m(tr)
 const judged = items.map(i => ({ ...i, skeptic: S[i.id] || null, trader: T[i.id] || null }))
 
 phase('Plan')
-const plan = await agent(`Build a ranked implementation plan (Russian, markdown) from these inventions and their two reviews (skeptic = testability, trader = live practice). Keep items that neither reviewer rejected, apply their fixes, order by expected value / effort. For each kept item give: what to code where (tp/engine.py change, new module, tp/hyp/binv_*.py setup file), the validation protocol (tp.screen with placebos, cohorts, periods), and the falsification criterion. End with a list of rejected items with one-line reasons. Project: ${REPO} (PLAN.md, INSIGHTS.md).\nITEMS:\n${JSON.stringify(judged)}`, { label: 'plan', phase: 'Plan' })
+const plan = await agent(`Build a ranked implementation plan (Russian, markdown) from these inventions and their two reviews (skeptic = testability, trader = live practice). Keep items that neither reviewer rejected, apply their fixes, order by expected value / effort. For each kept item give: what to code where (tp/engine.py change, new module, tp/hyp/binv_*.py setup file), the validation protocol (tp.screen with placebos, cohorts, periods), and the falsification criterion. End with a list of rejected items with one-line reasons. Project: ${REPO} (PLAN.md, INSIGHTS.md).\nITEMS:\n${JSON.stringify(judged)}`, { label: 'plan', phase: 'Plan', model: 'sonnet' })
 return { items: judged, plan }
