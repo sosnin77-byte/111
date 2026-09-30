@@ -27,8 +27,15 @@
 настоящих сигналов и подмен (подмена монеты сохраняет моменты, подмена момента — монету),
 поэтому сравнивать их можно только между собой, не с таблицей Стьюдента.
 
-    python -m tp.screen --pool all              # все сетапы и гипотезы, results/screen/*.json
+    python -m tp.screen --pool all                        # все сетапы и гипотезы, топ-100
     python -m tp.screen --setups sweep --runs 200
+    python -m tp.screen --pool all --cohorts --jobs 3     # по когортам 1-50 … 301-400
+    python -m tp.screen --summary                         # сводная таблица results/screen/summary.csv
+
+Результаты: results/screen/<монеты>/<сетап>.json, где <монеты> — "100" или когорта "101-200".
+Когорты считаются отдельно: своя карта геометрий, подмена монеты — из той же когорты, свои
+издержки (у мелких монет шире спред). Когорта, где гипотеза прошла, дальше проверяется
+строго на отложенном периоде именно в этой когорте (пять когорт — пять лишних шансов на шум).
 """
 from __future__ import annotations
 
@@ -51,6 +58,16 @@ W_BARS = {"5m": 12, "15m": 8, "1h": 6, "4h": 3}
 MIN_N = 30            # ячейка учитывается, если в ней не меньше MIN_N сделок
 
 RESULTS = Path(__file__).resolve().parent.parent / "results" / "screen"
+
+COHORTS = ("1-50", "51-100", "101-200", "201-300", "301-400")
+# Проскальзывание по когортам (доля цены на сторону). ВРЕМЕННО, по обороту: заменить оценкой
+# спреда по 5m-барам для каждой монеты (INSIGHTS.md, «Средние и мелкие монеты»).
+COHORT_SLIP = {"1-50": 0.0002, "51-100": 0.0003, "101-200": 0.0005, "201-300": 0.0007,
+               "301-400": 0.0010}
+
+
+def cohort_costs(spec: str) -> Costs:
+    return Costs(slip=COHORT_SLIP.get(spec, Costs().slip))
 
 
 # ---------------------------------------------------------------- пути цены после сигналов
@@ -261,20 +278,22 @@ def screen_variant(pool: Pool, vi: int, runs: int = 100, seed: int = 3) -> dict:
     return out
 
 
-def screen_setup(setup, uni, runs: int = 100, costs: Costs = Costs(), log=print) -> dict:
+def screen_setup(setup, uni, runs: int = 100, costs: Costs = Costs(), log=print,
+                 tag: str = "100") -> dict:
     t0 = time.time()
     pool = Pool(setup, uni, costs)
     res = {"setup": setup.name, "title": setup.title, "tf": setup.tf, "doc": setup.doc,
-           "coins": len(pool.syms), "runs": runs,
+           "universe": tag, "slip": costs.slip, "coins": len(pool.syms), "runs": runs,
            "grid": {"entry_atr": E_GRID.tolist(), "tp_atr": X_GRID.tolist(),
                     "sl_atr": Y_GRID.tolist(), "h_bars": list(H_GRID[setup.tf]),
                     "entry_window": W_BARS[setup.tf]},
            "variants": [screen_variant(pool, vi, runs) for vi in range(len(setup.variants))]}
     res["pass"] = any(v["pass"] for v in res["variants"])
-    RESULTS.mkdir(parents=True, exist_ok=True)
-    (RESULTS / f"{setup.name}.json").write_text(json.dumps(res, ensure_ascii=False, default=str))
+    out = RESULTS / tag
+    out.mkdir(parents=True, exist_ok=True)
+    (out / f"{setup.name}.json").write_text(json.dumps(res, ensure_ascii=False, default=str))
     types = sorted({v["edge_type"] for v in res["variants"] if v["edge_type"]})
-    log(f"{setup.name:28s} {', '.join(types) if types else '—':20s} "
+    log(f"[{tag}] {setup.name:28s} {', '.join(types) if types else '—':20s} "
         + " | ".join(f"{v['variant']}: плато t={v['real']['plateau_t']:.2f} p(монета/момент/напр)="
                      f"{v['coin']['plateau_t']['p']:.2f}/{v['time']['plateau_t']['p']:.2f}/"
                      f"{v['dir']['plateau_t']['p']:.2f}" for v in res["variants"])
@@ -282,38 +301,97 @@ def screen_setup(setup, uni, runs: int = 100, costs: Costs = Costs(), log=print)
     return res
 
 
-def main():
+def _all_setups(pool: str) -> tuple[list, dict]:
+    from .setups import BY_NAME, SETUPS
+    todo = list(SETUPS) if pool in ("main", "all") else []
+    names = dict(BY_NAME)
+    try:
+        from . import hyp
+        names.update(hyp.BY_NAME)
+        if pool in ("hyp", "all"):
+            todo += hyp.HYP
+    except Exception as e:           # гипотезы ещё пишутся
+        print("гипотезы недоступны:", e)
+    return todo, names
+
+
+_UNI: dict = {}
+
+
+def _task(args) -> dict:
+    """Один сетап на одном наборе монет (для параллельного запуска)."""
     from .fetch import load_universe
     from .research import Universe
-    from .setups import BY_NAME, SETUPS
+    name, spec, runs, only = args
+    _, names = _all_setups("all")
+    if spec not in _UNI:
+        _UNI.clear()                 # держим в памяти один набор монет на процесс
+        _UNI[spec] = Universe(only or load_universe(spec))
+    try:
+        r = screen_setup(names[name], _UNI[spec], runs, cohort_costs(spec),
+                         log=lambda m: print(m, flush=True), tag=spec)
+        return {"setup": name, "universe": spec, "pass": r["pass"]}
+    except Exception as e:
+        print(f"[{spec}] {name}: ОШИБКА {e!r}", flush=True)
+        return {"setup": name, "universe": spec, "pass": None}
+
+
+def summarize() -> Path:
+    """Сводная таблица по всем results/screen/<монеты>/<сетап>.json."""
+    import pandas as pd
+    rows = []
+    for f in sorted(RESULTS.glob("*/*.json")):
+        r = json.loads(f.read_text())
+        for v in r["variants"]:
+            c = v["real"].get("plateau_cell") or {}
+            rows.append({
+                "setup": r["setup"], "universe": r.get("universe", f.parent.name), "tf": r["tf"],
+                "variant": json.dumps(v["variant"], ensure_ascii=False), "coins": r["coins"],
+                "signals_is": v["signals_is"], "plateau_t": v["real"]["plateau_t"],
+                "best_t": v["real"]["best_t"], "breadth": v["real"]["breadth"],
+                "p_coin": v["coin"]["plateau_t"]["p"], "p_time": v["time"]["plateau_t"]["p"],
+                "p_dir": v["dir"]["plateau_t"]["p"],
+                "edge_type": edge_type({k: v[k]["plateau_t"]["p"] for k in KINDS}, SCREEN_P),
+                "entry_atr": c.get("entry_atr"), "tp_atr": c.get("tp_atr"), "sl_atr": c.get("sl_atr"),
+                "h_bars": r["grid"]["h_bars"][c["h_idx"]] if c else None,
+                "oos_plateau_pct": (v.get("oos_at_plateau") or {}).get("mean_pct"),
+                "oos_plateau_n": (v.get("oos_at_plateau") or {}).get("n"),
+            })
+    out = RESULTS / "summary.csv"
+    pd.DataFrame(rows).to_csv(out, index=False)
+    return out
+
+
+def main():
+    from concurrent.futures import ProcessPoolExecutor
     ap = argparse.ArgumentParser()
     ap.add_argument("--setups", nargs="*")
     ap.add_argument("--pool", choices=["main", "hyp", "all"], default="main")
     ap.add_argument("--only", nargs="*")
     ap.add_argument("--universe", default="100",
                     help='монеты: "100" — топ-100, "400" — топ-400, "101-400" — средние и мелкие')
+    ap.add_argument("--cohorts", nargs="*", help=f"когорты (без значений — все: {' '.join(COHORTS)})")
     ap.add_argument("--runs", type=int, default=100)
+    ap.add_argument("--jobs", type=int, default=1)
+    ap.add_argument("--summary", action="store_true", help="только собрать summary.csv")
     a = ap.parse_args()
-    pool = list(SETUPS) if a.pool in ("main", "all") else []
-    names = dict(BY_NAME)
-    if a.pool in ("hyp", "all") or a.setups:
-        try:
-            from . import hyp
-            names.update(hyp.BY_NAME)
-            if a.pool in ("hyp", "all"):
-                pool += hyp.HYP
-        except Exception as e:           # гипотезы ещё пишутся
-            print("гипотезы недоступны:", e)
-    todo = [names[n] for n in a.setups] if a.setups else pool
-    uni = Universe(a.only or load_universe(a.universe))
-    summary = []
-    for s in todo:
-        try:
-            r = screen_setup(s, uni, a.runs)
-            summary.append({"setup": s.name, "pass": r["pass"]})
-        except Exception as e:
-            print(f"{s.name}: ОШИБКА {e!r}", flush=True)
-    print(f"прошли первичный отбор: {sum(x['pass'] for x in summary)}/{len(summary)}")
+    if a.summary:
+        print(summarize())
+        return
+    todo, names = _all_setups(a.pool)
+    if a.setups:
+        todo = [names[n] for n in a.setups]
+    specs = (a.cohorts or list(COHORTS)) if a.cohorts is not None else [a.universe]
+    # по когорте за раз: процесс держит в памяти один набор монет
+    tasks = [(s.name, spec, a.runs, a.only) for spec in specs for s in todo]
+    if a.jobs > 1:
+        with ProcessPoolExecutor(a.jobs) as ex:
+            res = list(ex.map(_task, tasks, chunksize=max(1, len(todo) // a.jobs)))
+    else:
+        res = [_task(t) for t in tasks]
+    ok = [r for r in res if r["pass"]]
+    print(f"прошли первичный отбор: {len(ok)}/{len(res)} (сетап × монеты)")
+    print(summarize())
 
 
 if __name__ == "__main__":
