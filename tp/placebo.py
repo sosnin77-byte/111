@@ -67,7 +67,9 @@ class Table:
 class Pool:
     """Монеты одного ТФ для сетапа: бары, допустимые для сигнала моменты, настоящие сигналы."""
 
-    def __init__(self, setup: Setup, uni, costs: Costs = Costs()):
+    def __init__(self, setup: Setup, uni, costs: Costs = Costs(), cuts: list | None = None):
+        """cuts — дополнительные границы периодов (метки времени): подмена момента сдвигает
+        сигналы только внутри своего периода. Граница отложенного периода есть всегда."""
         self.setup, self.costs = setup, costs
         self.syms, self.bars, self.times, self.valid = [], [], [], []
         self.sig: dict[int, list] = {vi: [] for vi in range(len(setup.variants))}
@@ -92,6 +94,8 @@ class Pool:
             self.pos[gi, k] = np.arange(len(gi))
             self.avail[gi, k] = self.valid[k]
         self.oos_ns = pd.Timestamp(setup.oos_start, tz="UTC").value
+        self.cuts = np.array(sorted({self.oos_ns} | {pd.Timestamp(c, tz="UTC").value
+                                                     for c in (cuts or [])}), np.int64)
 
     # ------------------------------------------------------------ сигналы <-> таблица
     def table(self, vi: int) -> Table:
@@ -143,15 +147,16 @@ class Pool:
                     keep[j] = False
             return t.take(keep)
         if kind == "time":
-            is_oos = self.grid[t.g] >= self.oos_ns
+            seg = np.searchsorted(self.cuts, self.grid[t.g], side="right")
             keep = np.ones(len(t), bool)
             for k in np.unique(t.sym):
-                for per in (False, True):
-                    rows = np.flatnonzero((t.sym == k) & (is_oos == per))
+                gi = self.gix[k]
+                seg_k = np.searchsorted(self.cuts, self.grid[gi], side="right")
+                for per in np.unique(seg[t.sym == k]):
+                    rows = np.flatnonzero((t.sym == k) & (seg == per))
                     if not len(rows):
                         continue
-                    gi = self.gix[k]
-                    per_mask = (self.grid[gi] >= self.oos_ns) == per
+                    per_mask = seg_k == per
                     V = np.flatnonzero(self.valid[k] & per_mask)       # допустимые бары монеты
                     if not len(V):
                         keep[rows] = False

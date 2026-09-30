@@ -45,6 +45,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from numba import njit
 
 from .engine import Costs
@@ -95,10 +96,11 @@ def paths(pool: Pool, t: Table, L: int):
         cl = d * (b.c[idx] - o1) / a
         for m in (fav, adv, op, cl):
             m[~inside] = np.nan
-        parts.append((fav, adv, op, cl, (a / o1)[:, 0], pool.times[k][i] >= pool.oos_ns))
+        parts.append((fav, adv, op, cl, (a / o1)[:, 0], pool.times[k][i] >= pool.oos_ns,
+                      pool.times[k][i]))
     if not parts:
         z = np.empty((0, L))
-        return z, z, z, z, np.empty(0), np.empty(0, bool)
+        return z, z, z, z, np.empty(0), np.empty(0, bool), np.empty(0, np.int64)
     return tuple(np.concatenate(x) for x in zip(*parts))
 
 
@@ -175,7 +177,7 @@ def _surface(fav, adv, op, cl, scale, E, X, Y, H, W, f_mk, f_tk, slip):
 
 
 def surface(P, tf: str, costs: Costs = Costs(), mask=None) -> dict:
-    fav, adv, op, cl, scale, _ = P
+    fav, adv, op, cl, scale = P[:5]
     if mask is not None:
         fav, adv, op, cl, scale = fav[mask], adv[mask], op[mask], cl[mask], scale[mask]
     H = np.array(H_GRID[tf], np.int64)
@@ -234,12 +236,19 @@ def edge_type(p: dict, thr: float) -> str | None:
     return None
 
 
-def screen_variant(pool: Pool, vi: int, runs: int = 100, seed: int = 3) -> dict:
+def screen_variant(pool: Pool, vi: int, runs: int = 100, seed: int = 3, span=None) -> dict:
+    """span=(начало, конец) — считать статистики карты на этом отрезке вместо всего периода
+    оптимизации (например, на проверочной трети, которую поиск предвестников не видел)."""
     tf = pool.setup.tf
     L = W_BARS[tf] + max(H_GRID[tf])
     t = pool.table(vi)
     P = paths(pool, t, L)
-    is_ = ~P[5]
+    if span is None:
+        mask = lambda Q: ~Q[5]
+    else:
+        lo, hi = (pd.Timestamp(x, tz="UTC").value for x in span)
+        mask = lambda Q: (Q[6] >= lo) & (Q[6] < hi)
+    is_ = mask(P)
     real = surface(P, tf, pool.costs, is_)
     rs = stats(real)
     oos_S = surface(P, tf, pool.costs, P[5])
@@ -261,7 +270,7 @@ def screen_variant(pool: Pool, vi: int, runs: int = 100, seed: int = 3) -> dict:
         for _ in range(runs):
             pt = pool.placebo(t, kind, rng)
             Pp = paths(pool, pt, L)
-            st = stats(surface(Pp, tf, pool.costs, ~Pp[5]))
+            st = stats(surface(Pp, tf, pool.costs, mask(Pp)))
             for s in STATS:
                 null[s].append(st[s])
         res = {}

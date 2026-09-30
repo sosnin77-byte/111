@@ -1,0 +1,2528 @@
+{
+ "summary": {
+  "n": 160,
+  "все": {
+   "events": 160,
+   "taken": 87,
+   "trader_sum": -8.74,
+   "base_sum_all": 16.28,
+   "base_sum_taken": 16.31,
+   "base_sum_skipped": -0.03,
+   "diff_mean": -0.156,
+   "diff_ci90": [
+    -0.669,
+    0.356
+   ]
+  },
+  "absorption": {
+   "events": 40,
+   "taken": 23,
+   "trader_sum": -5.06,
+   "base_sum_all": -10.15,
+   "base_sum_taken": -7.24,
+   "base_sum_skipped": -2.92,
+   "diff_mean": 0.127,
+   "diff_ci90": [
+    -0.329,
+    0.573
+   ]
+  },
+  "capitulation": {
+   "events": 40,
+   "taken": 25,
+   "trader_sum": -4.29,
+   "base_sum_all": 31.99,
+   "base_sum_taken": 11.45,
+   "base_sum_skipped": 20.54,
+   "diff_mean": -0.907,
+   "diff_ci90": [
+    -2.054,
+    0.279
+   ]
+  },
+  "liq_flush": {
+   "events": 40,
+   "taken": 22,
+   "trader_sum": -3.79,
+   "base_sum_all": -5.23,
+   "base_sum_taken": -1.31,
+   "base_sum_skipped": -3.92,
+   "diff_mean": 0.036,
+   "diff_ci90": [
+    -0.523,
+    0.612
+   ]
+  },
+  "stop_hunter": {
+   "events": 40,
+   "taken": 17,
+   "trader_sum": 4.4,
+   "base_sum_all": -0.33,
+   "base_sum_taken": 13.41,
+   "base_sum_skipped": -13.74,
+   "diff_mean": 0.118,
+   "diff_ci90": [
+    -1.384,
+    1.641
+   ]
+  }
+ },
+ "rows": [
+  {
+   "id": "liq000",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": -2.0998428466195804,
+   "base_pnl": -7.338598598276587,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "trend_htf_with",
+    "oi_flush",
+    "strong_reaction",
+    "crowd_long",
+    "news_like_spike"
+   ]
+  },
+  {
+   "id": "liq001",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": -1.2253261881323687,
+   "base_pnl": -0.711944019050806,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "at_resistance",
+    "climax_bar",
+    "absorption_seen",
+    "oi_buildup"
+   ]
+  },
+  {
+   "id": "liq002",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "ордер не исполнен",
+   "confidence": 2,
+   "reasons": [
+    "at_resistance",
+    "weak_reaction",
+    "btc_against"
+   ]
+  },
+  {
+   "id": "liq003",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "ордер не исполнен",
+   "confidence": 2,
+   "reasons": [
+    "climax_bar",
+    "at_resistance",
+    "oi_buildup",
+    "crowd_long",
+    "news_like_spike",
+    "stop_too_wide"
+   ]
+  },
+  {
+   "id": "liq004",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -0.913468302937859,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "trend_htf_against",
+    "crowd_long",
+    "liquidations_ongoing",
+    "btc_against"
+   ]
+  },
+  {
+   "id": "liq005",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "funding_crowded",
+    "crowd_short",
+    "btc_against",
+    "news_like_spike",
+    "extended_move"
+   ]
+  },
+  {
+   "id": "liq006",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": 0.49165776126679384,
+   "base_pnl": 0.0,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "oi_flush",
+    "capitulation_volume",
+    "liquidations_exhausted",
+    "btc_against",
+    "crowd_long"
+   ]
+  },
+  {
+   "id": "liq007",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": -1.3961804988626076,
+   "base_pnl": -3.9334709802773697,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "at_support",
+    "absorption_seen",
+    "oi_flush",
+    "btc_supportive",
+    "trend_htf_with"
+   ]
+  },
+  {
+   "id": "liq008",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": -0.9630909189322711,
+   "base_pnl": -0.7883945858901438,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "trend_htf_against",
+    "at_support",
+    "crowd_short",
+    "delta_divergence",
+    "liquidations_exhausted"
+   ]
+  },
+  {
+   "id": "liq009",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -5.914836678295618,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "news_like_spike",
+    "stop_too_wide",
+    "oi_buildup",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "liq010",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": -1.5812588822764564,
+   "base_pnl": -0.034362222846492096,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "btc_supportive",
+    "at_resistance",
+    "weak_reaction"
+   ]
+  },
+  {
+   "id": "liq011",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -1.9443557127008528,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "extended_move",
+    "oi_buildup",
+    "crowd_short",
+    "strong_reaction"
+   ]
+  },
+  {
+   "id": "liq012",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": 0.679398552990391,
+   "base_pnl": 1.4128408861569015,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "oi_flush",
+    "delta_divergence",
+    "liquidations_exhausted",
+    "crowd_long"
+   ]
+  },
+  {
+   "id": "liq013",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": 0.8337927483060651,
+   "base_pnl": 1.5499687519901253,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "at_resistance",
+    "crowd_long",
+    "trend_htf_against",
+    "btc_against"
+   ]
+  },
+  {
+   "id": "liq014",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.4106335299832262,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "choppy",
+    "mid_range",
+    "weak_reaction"
+   ]
+  },
+  {
+   "id": "liq015",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": 2.4601727981171178,
+   "base_pnl": 0.6391701327136066,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "news_like_spike",
+    "trend_htf_with",
+    "climax_bar",
+    "funding_crowded"
+   ]
+  },
+  {
+   "id": "liq016",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": 1.2208746796190537,
+   "base_pnl": 0.8225668453217572,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "capitulation_volume",
+    "oi_flush",
+    "delta_divergence",
+    "trend_htf_against",
+    "btc_against"
+   ]
+  },
+  {
+   "id": "liq017",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": -1.1674175593829428,
+   "base_pnl": -1.976411449432286,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "at_support",
+    "oi_flush",
+    "liquidations_exhausted",
+    "crowd_long"
+   ]
+  },
+  {
+   "id": "liq018",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": -0.5370427132871992,
+   "base_pnl": -0.14470707170734912,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "at_resistance",
+    "climax_bar",
+    "absorption_seen",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "liq019",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": 5.212610381628099,
+   "base_pnl": 2.205040041696137,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "trend_htf_with",
+    "at_resistance",
+    "climax_bar",
+    "oi_buildup",
+    "crowd_short"
+   ]
+  },
+  {
+   "id": "liq020",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": -1.1047393188802925,
+   "base_pnl": 0.8809152791156917,
+   "status": "сделка",
+   "confidence": 4,
+   "reasons": [
+    "trend_htf_with",
+    "btc_supportive",
+    "at_support",
+    "capitulation_volume",
+    "absorption_seen",
+    "oi_flush",
+    "funding_crowded",
+    "crowd_short",
+    "spring_below_prior_low"
+   ]
+  },
+  {
+   "id": "liq021",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "пропуск",
+   "confidence": 2,
+   "reasons": [
+    "news_like_spike",
+    "climax_bar",
+    "mid_range",
+    "weak_reaction",
+    "stop_too_wide"
+   ]
+  },
+  {
+   "id": "liq022",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.39052872301649455,
+   "status": "пропуск",
+   "confidence": 2,
+   "reasons": [
+    "trend_htf_against",
+    "btc_against",
+    "weak_reaction",
+    "crowd_long"
+   ]
+  },
+  {
+   "id": "liq023",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -3.571089796855759,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "trend_htf_against",
+    "btc_against",
+    "oi_buildup",
+    "mid_range"
+   ]
+  },
+  {
+   "id": "liq024",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.5425660990320564,
+   "status": "пропуск",
+   "confidence": 2,
+   "reasons": [
+    "trend_htf_with",
+    "weak_reaction",
+    "no_climax",
+    "mid_range"
+   ]
+  },
+  {
+   "id": "liq025",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "пропуск",
+   "confidence": 2,
+   "reasons": [
+    "btc_supportive",
+    "crowd_short",
+    "oi_buildup",
+    "stop_too_wide",
+    "at_resistance"
+   ]
+  },
+  {
+   "id": "liq026",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": 1.0774639844325857,
+   "base_pnl": 0.0,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "at_resistance",
+    "upthrust",
+    "weak_reaction"
+   ]
+  },
+  {
+   "id": "liq027",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 1.0911238548369784,
+   "status": "пропуск",
+   "confidence": 2,
+   "reasons": [
+    "btc_against",
+    "crowd_long",
+    "climax_bar",
+    "choppy"
+   ]
+  },
+  {
+   "id": "liq028",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 1.0007541549722763,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "news_like_spike",
+    "stop_too_wide",
+    "choppy",
+    "low_liquidity_coin"
+   ]
+  },
+  {
+   "id": "liq029",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": -3.633981167512692,
+   "base_pnl": 4.51661107096029,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "capitulation_volume",
+    "oi_flush",
+    "liquidations_exhausted",
+    "at_support",
+    "ema50_4h_tag"
+   ]
+  },
+  {
+   "id": "liq030",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.7299498521185557,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "trend_htf_against",
+    "btc_against",
+    "weak_reaction",
+    "liquidations_ongoing",
+    "no_climax"
+   ]
+  },
+  {
+   "id": "liq031",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "ордер не исполнен",
+   "confidence": 3,
+   "reasons": [
+    "at_support",
+    "strong_reaction",
+    "oi_flush",
+    "retest_breakout",
+    "btc_against",
+    "crowd_long"
+   ]
+  },
+  {
+   "id": "liq032",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": -0.02602937741840231,
+   "base_pnl": 0.22252410870369582,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "at_resistance",
+    "double_top_sweep",
+    "strong_reaction",
+    "crowd_short"
+   ]
+  },
+  {
+   "id": "liq033",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 2.337907184025731,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "trend_htf_against",
+    "extended_move",
+    "oi_buildup",
+    "weak_reaction"
+   ]
+  },
+  {
+   "id": "liq034",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "пропуск",
+   "confidence": 2,
+   "reasons": [
+    "at_resistance",
+    "crowd_short",
+    "btc_supportive",
+    "no_climax"
+   ]
+  },
+  {
+   "id": "liq035",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": -2.920217975708498,
+   "base_pnl": 0.7745233170908993,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "capitulation_volume",
+    "oi_flush",
+    "at_support",
+    "ema50_4h_tag",
+    "strong_reaction"
+   ]
+  },
+  {
+   "id": "liq036",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.7263163924479621,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "trend_htf_against",
+    "btc_against",
+    "crowd_long",
+    "weak_reaction"
+   ]
+  },
+  {
+   "id": "liq037",
+   "setup": "liq_flush",
+   "take": true,
+   "trader_pnl": 0.8852626588460952,
+   "base_pnl": 0.5934169336516509,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "at_support",
+    "range_bottom_sweep",
+    "liquidations_exhausted",
+    "trend_htf_against",
+    "no_supply"
+   ]
+  },
+  {
+   "id": "liq038",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 1.3815466930298417,
+   "status": "пропуск",
+   "confidence": 2,
+   "reasons": [
+    "mid_range",
+    "oi_buildup",
+    "crowd_short",
+    "no_resistance_level"
+   ]
+  },
+  {
+   "id": "liq039",
+   "setup": "liq_flush",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -0.18683210921545743,
+   "status": "пропуск",
+   "confidence": 2,
+   "reasons": [
+    "weak_reaction",
+    "mid_range",
+    "breakout_holding"
+   ]
+  },
+  {
+   "id": "cap040",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": 7.824992436671876,
+   "base_pnl": -0.07641831725129447,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "capitulation_volume",
+    "oi_flush",
+    "at_support",
+    "btc_against",
+    "trend_htf_against",
+    "crowd_long"
+   ]
+  },
+  {
+   "id": "cap041",
+   "setup": "capitulation",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -0.07981238668774897,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "mid_range",
+    "weak_reaction",
+    "crowd_long"
+   ]
+  },
+  {
+   "id": "cap042",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": -2.223858675705312,
+   "base_pnl": 0.06446698941425284,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "oi_flush",
+    "delta_divergence",
+    "crowd_long"
+   ]
+  },
+  {
+   "id": "cap043",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.8508002444366284,
+   "status": "ордер не исполнен",
+   "confidence": 2,
+   "reasons": [
+    "climax_bar",
+    "capitulation_volume",
+    "absorption_seen",
+    "oi_flush",
+    "btc_against",
+    "crowd_long",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "cap044",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": -2.718397346833435,
+   "base_pnl": 2.0660927016741693,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "oi_flush",
+    "at_support",
+    "strong_reaction",
+    "liquidations_exhausted",
+    "crowd_long"
+   ]
+  },
+  {
+   "id": "cap045",
+   "setup": "capitulation",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 4.288028387279119,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "weak_reaction",
+    "no_climax"
+   ]
+  },
+  {
+   "id": "cap046",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": 0.9974229339611883,
+   "base_pnl": -0.7549287306157451,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "oi_flush",
+    "climax_bar",
+    "strong_reaction"
+   ]
+  },
+  {
+   "id": "cap047",
+   "setup": "capitulation",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "news_like_spike",
+    "funding_crowded",
+    "crowd_long",
+    "low_liquidity_coin"
+   ]
+  },
+  {
+   "id": "cap048",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": -2.000093794617136,
+   "base_pnl": 4.6576204240398145,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "capitulation_volume",
+    "oi_flush",
+    "crowd_long",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "cap049",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": -1.613044966931483,
+   "base_pnl": -0.001350014803787867,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "absorption_seen",
+    "liquidations_exhausted",
+    "crowd_short",
+    "btc_supportive",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "cap050",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": 0.0,
+   "base_pnl": 7.273348170368327,
+   "status": "ордер не исполнен",
+   "confidence": 2,
+   "reasons": [
+    "capitulation_volume",
+    "oi_flush",
+    "absorption_seen",
+    "trend_htf_against",
+    "crowd_long"
+   ]
+  },
+  {
+   "id": "cap051",
+   "setup": "capitulation",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 10.966906040418882,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "btc_against",
+    "trend_htf_against",
+    "weak_reaction",
+    "no_climax"
+   ]
+  },
+  {
+   "id": "cap052",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": -2.3281045770845687,
+   "base_pnl": -2.9162153397178296,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "absorption_seen",
+    "strong_reaction",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "cap053",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": 4.440700604714754,
+   "base_pnl": -0.9893217598500567,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "crowd_short",
+    "oi_flush",
+    "climax_bar",
+    "news_like_spike",
+    "strong_reaction"
+   ]
+  },
+  {
+   "id": "cap054",
+   "setup": "capitulation",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -5.4542502879482235,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "crowd_long",
+    "weak_reaction",
+    "liquidations_ongoing"
+   ]
+  },
+  {
+   "id": "cap055",
+   "setup": "capitulation",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.6622654831402717,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "weak_reaction",
+    "no_climax",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "cap056",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": -2.817871881072109,
+   "base_pnl": -0.18222660771069463,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "spring",
+    "at_support",
+    "capitulation_volume",
+    "strong_reaction",
+    "oi_flush",
+    "btc_against"
+   ]
+  },
+  {
+   "id": "cap057",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": -1.7951941474651307,
+   "base_pnl": 5.609039546482182,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "oi_flush",
+    "funding_negative",
+    "weak_reaction",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "cap058",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": 2.4892825848125266,
+   "base_pnl": 11.50971979452822,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "capitulation_volume",
+    "oi_flush",
+    "crowd_short",
+    "btc_supportive",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "cap059",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": -3.198392588767715,
+   "base_pnl": 0.7693492408507281,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "capitulation_volume",
+    "oi_flush",
+    "btc_against",
+    "crowd_short",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "cap060",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": 1.2371152615872638,
+   "base_pnl": 1.3943354642422074,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "capitulation_volume",
+    "climax_bar",
+    "oi_flush",
+    "at_support",
+    "strong_reaction",
+    "trend_htf_against",
+    "btc_against",
+    "crowd_long"
+   ]
+  },
+  {
+   "id": "cap061",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": 0.0,
+   "base_pnl": -5.15247394771714,
+   "status": "ордер не исполнен",
+   "confidence": 3,
+   "reasons": [
+    "oi_flush",
+    "climax_bar",
+    "trend_htf_with",
+    "extended_move",
+    "at_support",
+    "crowd_long",
+    "funding_crowded"
+   ]
+  },
+  {
+   "id": "cap062",
+   "setup": "capitulation",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "funding_crowded",
+    "crowd_long",
+    "weak_reaction",
+    "liquidations_ongoing"
+   ]
+  },
+  {
+   "id": "cap063",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": -5.589613944897957,
+   "base_pnl": -18.558893633974787,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "capitulation_volume",
+    "extended_move",
+    "crowd_short",
+    "oi_flush",
+    "at_support",
+    "btc_against",
+    "climax_bar"
+   ]
+  },
+  {
+   "id": "cap064",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": 1.1018202282615746,
+   "base_pnl": 0.0,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "absorption_seen",
+    "liquidations_exhausted",
+    "crowd_short",
+    "oi_flush",
+    "at_support",
+    "trend_htf_against",
+    "delta_divergence"
+   ]
+  },
+  {
+   "id": "cap065",
+   "setup": "capitulation",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -2.943949071919286,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "mid_range",
+    "crowd_long",
+    "trend_htf_against",
+    "no_room_to_target"
+   ]
+  },
+  {
+   "id": "cap066",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "ордер не исполнен",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "crowd_short",
+    "funding_crowded",
+    "climax_bar",
+    "capitulation_volume",
+    "at_support"
+   ]
+  },
+  {
+   "id": "cap067",
+   "setup": "capitulation",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 2.6676380325932376,
+   "status": "пропуск",
+   "confidence": 2,
+   "reasons": [
+    "btc_against",
+    "trend_htf_against",
+    "liquidations_ongoing",
+    "weak_reaction"
+   ]
+  },
+  {
+   "id": "cap068",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "ордер не исполнен",
+   "confidence": 3,
+   "reasons": [
+    "capitulation_volume",
+    "climax_bar",
+    "crowd_short",
+    "oi_flush",
+    "strong_reaction",
+    "news_like_spike"
+   ]
+  },
+  {
+   "id": "cap069",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": -1.6782912403336754,
+   "base_pnl": -1.4933530932952028,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "oi_flush",
+    "crowd_short",
+    "at_support",
+    "btc_against",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "cap070",
+   "setup": "capitulation",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 2.0879095766103766,
+   "status": "пропуск",
+   "confidence": 2,
+   "reasons": [
+    "trend_htf_against",
+    "liquidations_ongoing",
+    "delta_divergence",
+    "at_support"
+   ]
+  },
+  {
+   "id": "cap071",
+   "setup": "capitulation",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 5.669955698423729,
+   "status": "пропуск",
+   "confidence": 2,
+   "reasons": [
+    "news_like_spike",
+    "crowd_long",
+    "liquidations_ongoing",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "cap072",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": 4.401270859693746,
+   "base_pnl": 3.2041738111429767,
+   "status": "сделка",
+   "confidence": 4,
+   "reasons": [
+    "capitulation_volume",
+    "oi_flush",
+    "extended_move",
+    "crowd_short",
+    "delta_divergence",
+    "trend_htf_with",
+    "climax_bar"
+   ]
+  },
+  {
+   "id": "cap073",
+   "setup": "capitulation",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "пропуск",
+   "confidence": 2,
+   "reasons": [
+    "news_like_spike",
+    "stop_too_wide",
+    "choppy"
+   ]
+  },
+  {
+   "id": "cap074",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": -1.820078922523958,
+   "base_pnl": 2.0715275090083525,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "funding_crowded",
+    "crowd_short",
+    "at_support",
+    "weak_reaction",
+    "btc_against"
+   ]
+  },
+  {
+   "id": "cap075",
+   "setup": "capitulation",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.4370554902315473,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "mid_range",
+    "crowd_long",
+    "oi_buildup",
+    "no_room_to_target"
+   ]
+  },
+  {
+   "id": "cap076",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": 1.003536160350016,
+   "base_pnl": 2.103301982356088,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "oi_flush",
+    "strong_reaction",
+    "at_support",
+    "btc_against",
+    "crowd_long",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "cap077",
+   "setup": "capitulation",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.5377384890546902,
+   "status": "пропуск",
+   "confidence": 2,
+   "reasons": [
+    "weak_reaction",
+    "crowd_long",
+    "no_room_to_target"
+   ]
+  },
+  {
+   "id": "cap078",
+   "setup": "capitulation",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 1.702327117648746,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "mid_range",
+    "crowd_long",
+    "funding_crowded",
+    "weak_reaction"
+   ]
+  },
+  {
+   "id": "cap079",
+   "setup": "capitulation",
+   "take": true,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "ордер не исполнен",
+   "confidence": 2,
+   "reasons": [
+    "climax_bar",
+    "capitulation_volume",
+    "extended_move",
+    "oi_flush",
+    "btc_against",
+    "crowd_long",
+    "stop_too_wide"
+   ]
+  },
+  {
+   "id": "sto080",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": 1.8632658570193212,
+   "base_pnl": -10.229649552161192,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "trend_htf_with",
+    "capitulation_volume",
+    "absorption_seen",
+    "mid_range",
+    "funding_crowded",
+    "crowd_long"
+   ]
+  },
+  {
+   "id": "sto081",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": 0.0,
+   "base_pnl": 2.9086325399777424,
+   "status": "ордер не исполнен",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "at_resistance",
+    "extended_move",
+    "oi_buildup",
+    "strong_reaction",
+    "btc_against"
+   ]
+  },
+  {
+   "id": "sto082",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": 3.0620334528444157,
+   "base_pnl": 3.177799049400792,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "at_resistance",
+    "oi_buildup",
+    "liquidations_ongoing",
+    "crowd_short",
+    "btc_against"
+   ]
+  },
+  {
+   "id": "sto083",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 8.483078256799793,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "news_like_spike",
+    "choppy",
+    "mid_range",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "sto084",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -9.715920917303556,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "mid_range",
+    "stop_too_wide",
+    "choppy"
+   ]
+  },
+  {
+   "id": "sto085",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "news_like_spike",
+    "funding_crowded",
+    "crowd_short",
+    "choppy",
+    "low_liquidity_coin"
+   ]
+  },
+  {
+   "id": "sto086",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -5.3760738296172255,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "mid_range",
+    "btc_against",
+    "weak_reaction"
+   ]
+  },
+  {
+   "id": "sto087",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 1.9438989805445426,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "weak_reaction",
+    "choppy"
+   ]
+  },
+  {
+   "id": "sto088",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": -2.0627364599997784,
+   "base_pnl": 2.9431138122872085,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "trend_htf_with",
+    "at_resistance",
+    "weak_reaction"
+   ]
+  },
+  {
+   "id": "sto089",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": -2.495147657197139,
+   "base_pnl": 3.45583294650987,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "at_resistance",
+    "strong_reaction",
+    "choppy"
+   ]
+  },
+  {
+   "id": "sto090",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": 3.443787109644038,
+   "base_pnl": 3.0001071978276026,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "trend_htf_with",
+    "at_resistance",
+    "btc_against",
+    "weak_reaction"
+   ]
+  },
+  {
+   "id": "sto091",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 1.7097133037722132,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "weak_reaction",
+    "no_room_to_target"
+   ]
+  },
+  {
+   "id": "sto092",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 4.048144058954536,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "mid_range",
+    "oi_flush",
+    "choppy"
+   ]
+  },
+  {
+   "id": "sto093",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 2.1903724477151605,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "trend_htf_against",
+    "at_resistance"
+   ]
+  },
+  {
+   "id": "sto094",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": 0.0,
+   "base_pnl": 9.685957139469345,
+   "status": "ордер не исполнен",
+   "confidence": 2,
+   "reasons": [
+    "trend_htf_with",
+    "oi_flush",
+    "extended_move",
+    "crowd_short",
+    "liquidations_exhausted"
+   ]
+  },
+  {
+   "id": "sto095",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -13.769087799651333,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "news_like_spike",
+    "trend_htf_against",
+    "extended_move",
+    "funding_crowded"
+   ]
+  },
+  {
+   "id": "sto096",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "ордер не исполнен",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "oi_flush",
+    "at_support",
+    "absorption_seen",
+    "crowd_long"
+   ]
+  },
+  {
+   "id": "sto097",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 3.428425092308053,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "choppy",
+    "mid_range",
+    "btc_against",
+    "weak_reaction"
+   ]
+  },
+  {
+   "id": "sto098",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -3.0704934869019542,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "weak_reaction",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "sto099",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": 2.054492802927605,
+   "base_pnl": -7.861081470447558,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "extended_move",
+    "climax_bar",
+    "at_resistance"
+   ]
+  },
+  {
+   "id": "sto100",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": 3.636176388817451,
+   "base_pnl": 3.6495796095349475,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "at_resistance",
+    "btc_supportive",
+    "failed_breakout"
+   ]
+  },
+  {
+   "id": "sto101",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 2.751093081230066,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "no_room_to_target",
+    "stop_too_wide",
+    "local_uptrend"
+   ]
+  },
+  {
+   "id": "sto102",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": -2.9037372217741786,
+   "base_pnl": 4.780408354181731,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "at_support",
+    "absorption_seen",
+    "funding_reset"
+   ]
+  },
+  {
+   "id": "sto103",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 2.4147726213937246,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "strong_reaction",
+    "weak_reaction",
+    "trend_htf_with"
+   ]
+  },
+  {
+   "id": "sto104",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": -1.3077577814468233,
+   "base_pnl": -3.8490368454324924,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "at_resistance",
+    "crowd_long",
+    "oi_flush",
+    "delta_divergence"
+   ]
+  },
+  {
+   "id": "sto105",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 1.0081577249763645,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "weak_reaction",
+    "choppy",
+    "no_sweep"
+   ]
+  },
+  {
+   "id": "sto106",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": 5.391179168196691,
+   "base_pnl": 7.292678556931753,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "trend_htf_with",
+    "capitulation_volume",
+    "crowd_short",
+    "strong_reaction",
+    "btc_against"
+   ]
+  },
+  {
+   "id": "sto107",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -8.004505763443257,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "trend_htf_against",
+    "extended_move",
+    "crowd_short",
+    "mid_range"
+   ]
+  },
+  {
+   "id": "sto108",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": -1.754308080489952,
+   "base_pnl": -5.0725729918815885,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "failed_breakout",
+    "lower_highs",
+    "btc_supportive"
+   ]
+  },
+  {
+   "id": "sto109",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -5.732639328119679,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "btc_against",
+    "weak_reaction",
+    "mid_range",
+    "crowd_short"
+   ]
+  },
+  {
+   "id": "sto110",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.8765193188585898,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "news_like_spike",
+    "choppy",
+    "stop_too_wide",
+    "mid_range"
+   ]
+  },
+  {
+   "id": "sto111",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 3.823198740401827,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "mid_range",
+    "absorption_seen",
+    "extended_move"
+   ]
+  },
+  {
+   "id": "sto112",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 3.8353010614265335,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "strong_reaction",
+    "btc_against",
+    "weak_reaction"
+   ]
+  },
+  {
+   "id": "sto113",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -8.759423872082985,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "news_like_spike",
+    "extended_move",
+    "climax_bar",
+    "absorption_seen"
+   ]
+  },
+  {
+   "id": "sto114",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -5.763583813958053,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "choppy",
+    "low_liquidity_coin",
+    "weak_reaction"
+   ]
+  },
+  {
+   "id": "sto115",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 6.07880862346164,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "strong_reaction",
+    "crowd_short",
+    "btc_against"
+   ]
+  },
+  {
+   "id": "sto116",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": -2.264803051536147,
+   "base_pnl": 5.540297442937265,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "at_resistance",
+    "oi_buildup",
+    "btc_supportive",
+    "extended_move"
+   ]
+  },
+  {
+   "id": "sto117",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": 0.0,
+   "base_pnl": 2.7090660002133826,
+   "status": "ордер не исполнен",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "at_resistance",
+    "strong_reaction",
+    "delta_divergence"
+   ]
+  },
+  {
+   "id": "sto118",
+   "setup": "stop_hunter",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 3.860179008051868,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "weak_reaction",
+    "trend_htf_with",
+    "lower_highs"
+   ]
+  },
+  {
+   "id": "sto119",
+   "setup": "stop_hunter",
+   "take": true,
+   "trader_pnl": -2.2649395252340883,
+   "base_pnl": -8.720419039315116,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "crowd_short",
+    "low_volume_pullback",
+    "at_support"
+   ]
+  },
+  {
+   "id": "abs120",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "ордер не исполнен",
+   "confidence": 3,
+   "reasons": [
+    "absorption_seen",
+    "at_support",
+    "crowd_short",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "abs121",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "trend_htf_against",
+    "descending_highs",
+    "choppy"
+   ]
+  },
+  {
+   "id": "abs122",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.32478126503907706,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "crowd_long",
+    "oi_buildup",
+    "trend_htf_against",
+    "btc_against"
+   ]
+  },
+  {
+   "id": "abs123",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": -0.6337350375751423,
+   "base_pnl": -0.053272039429009044,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "absorption_seen",
+    "at_support",
+    "trend_htf_against",
+    "low_liquidity_coin"
+   ]
+  },
+  {
+   "id": "abs124",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": 1.4558980703910744,
+   "base_pnl": 0.0,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "absorption_seen",
+    "at_support",
+    "btc_supportive",
+    "oi_flush"
+   ]
+  },
+  {
+   "id": "abs125",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": -0.9910054733883282,
+   "base_pnl": -0.6683341754498325,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "absorption_seen",
+    "at_support",
+    "oi_flush",
+    "btc_supportive"
+   ]
+  },
+  {
+   "id": "abs126",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "mid_range",
+    "crowd_long",
+    "trend_htf_against",
+    "choppy"
+   ]
+  },
+  {
+   "id": "abs127",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": -1.5753718374525698,
+   "base_pnl": -2.584241634498915,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "crowd_short",
+    "funding_crowded",
+    "absorption_seen",
+    "news_like_spike",
+    "choppy"
+   ]
+  },
+  {
+   "id": "abs128",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "crowd_long",
+    "choppy",
+    "mid_range",
+    "btc_against",
+    "news_like_spike"
+   ]
+  },
+  {
+   "id": "abs129",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": -1.1349384631578938,
+   "base_pnl": -1.6397736428397085,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "absorption_seen",
+    "higher_lows",
+    "at_support"
+   ]
+  },
+  {
+   "id": "abs130",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -2.824066266914876,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "btc_against",
+    "choppy",
+    "low_liquidity_coin",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "abs131",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": -1.489008057066777,
+   "base_pnl": -0.4961465664695585,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "crowd_short",
+    "funding_crowded",
+    "absorption_seen",
+    "at_support",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "abs132",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.41792160256506944,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "crowd_short",
+    "funding_crowded",
+    "at_support",
+    "choppy"
+   ]
+  },
+  {
+   "id": "abs133",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 1.3324292023200588,
+   "status": "пропуск",
+   "confidence": 2,
+   "reasons": [
+    "trend_htf_against",
+    "weak_reaction",
+    "relative_weakness"
+   ]
+  },
+  {
+   "id": "abs134",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": -0.7853454809236793,
+   "base_pnl": 0.9809644251455356,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "trend_htf_with",
+    "at_support",
+    "absorption_seen"
+   ]
+  },
+  {
+   "id": "abs135",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": -1.6071740889086674,
+   "base_pnl": -0.6001449305895447,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "spring",
+    "oi_flush",
+    "absorption_seen",
+    "strong_reaction",
+    "crowd_long"
+   ]
+  },
+  {
+   "id": "abs136",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": -1.347803711689357,
+   "base_pnl": -0.37300806191595026,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "spring",
+    "crowd_short",
+    "btc_supportive",
+    "mid_range"
+   ]
+  },
+  {
+   "id": "abs137",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -3.109877439705347,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "crowd_long",
+    "trend_htf_against",
+    "mid_range",
+    "btc_against"
+   ]
+  },
+  {
+   "id": "abs138",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": -1.6413336956740594,
+   "base_pnl": -1.571472784941694,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "capitulation_volume",
+    "oi_flush",
+    "at_support",
+    "btc_against"
+   ]
+  },
+  {
+   "id": "abs139",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": 0.699111051517362,
+   "base_pnl": -0.20675611094433544,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "spring",
+    "btc_supportive",
+    "crowd_short",
+    "oi_buildup"
+   ]
+  },
+  {
+   "id": "abs140",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -5.144569109011292,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "trend_htf_against",
+    "extended_move",
+    "weak_reaction",
+    "liquidations_ongoing"
+   ]
+  },
+  {
+   "id": "abs141",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "ордер не исполнен",
+   "confidence": 2,
+   "reasons": [
+    "absorption_seen",
+    "trend_htf_against",
+    "btc_supportive",
+    "crowd_short",
+    "mid_range"
+   ]
+  },
+  {
+   "id": "abs142",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 1.022985063133655,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "mid_range",
+    "choppy",
+    "crowd_long",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "abs143",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": -0.7787093005321233,
+   "base_pnl": 0.04009509762597802,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "at_support",
+    "absorption_seen",
+    "oi_flush",
+    "capitulation_volume",
+    "btc_against"
+   ]
+  },
+  {
+   "id": "abs144",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -0.03451977669290796,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "mid_range",
+    "choppy",
+    "trend_htf_against",
+    "weak_reaction"
+   ]
+  },
+  {
+   "id": "abs145",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": -0.8840732364729422,
+   "base_pnl": -1.5229751777364027,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "absorption_seen",
+    "liquidations_exhausted",
+    "trend_htf_against",
+    "smart_money_short"
+   ]
+  },
+  {
+   "id": "abs146",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": 1.6044995419706085,
+   "base_pnl": 0.7552460408102165,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "absorption_seen",
+    "oi_buildup",
+    "at_support",
+    "trend_htf_against",
+    "btc_against"
+   ]
+  },
+  {
+   "id": "abs147",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 0.0,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "trend_htf_against",
+    "btc_against",
+    "mid_range"
+   ]
+  },
+  {
+   "id": "abs148",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -2.6752813596660987,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "trend_htf_against",
+    "choppy",
+    "weak_reaction",
+    "mid_range"
+   ]
+  },
+  {
+   "id": "abs149",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": -0.764663798486982,
+   "base_pnl": -0.8611714350137217,
+   "status": "сделка",
+   "confidence": 4,
+   "reasons": [
+    "absorption_seen",
+    "trend_htf_with",
+    "at_support",
+    "oi_flush",
+    "crowd_short",
+    "btc_supportive"
+   ]
+  },
+  {
+   "id": "abs150",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": -2.215686690555596,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "crowd_long",
+    "btc_against",
+    "trend_htf_against",
+    "liquidations_ongoing"
+   ]
+  },
+  {
+   "id": "abs151",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": -0.9492410245453381,
+   "base_pnl": -1.0525760690959585,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "absorption_seen",
+    "crowd_short",
+    "oi_flush",
+    "trend_htf_against",
+    "at_support"
+   ]
+  },
+  {
+   "id": "abs152",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 3.799836590164922,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "news_like_spike",
+    "trend_htf_against",
+    "btc_against",
+    "weak_reaction"
+   ]
+  },
+  {
+   "id": "abs153",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": 2.632754760945338,
+   "base_pnl": 0.23638782210833312,
+   "status": "сделка",
+   "confidence": 2,
+   "reasons": [
+    "trend_htf_with",
+    "at_support",
+    "absorption_seen",
+    "funding_crowded",
+    "crowd_long"
+   ]
+  },
+  {
+   "id": "abs154",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": 1.084004004663753,
+   "base_pnl": 2.307459006875435,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "oi_flush",
+    "absorption_seen",
+    "strong_reaction",
+    "trend_htf_against"
+   ]
+  },
+  {
+   "id": "abs155",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 4.525742034574199,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "trend_htf_against",
+    "funding_crowded",
+    "choppy",
+    "mid_range"
+   ]
+  },
+  {
+   "id": "abs156",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": 2.982477720078872,
+   "base_pnl": 2.5242470283820406,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "absorption_seen",
+    "btc_supportive",
+    "delta_divergence"
+   ]
+  },
+  {
+   "id": "abs157",
+   "setup": "absorption",
+   "take": false,
+   "trader_pnl": 0.0,
+   "base_pnl": 1.664816396440561,
+   "status": "пропуск",
+   "confidence": 1,
+   "reasons": [
+    "funding_crowded",
+    "btc_against",
+    "trend_htf_against",
+    "mid_range"
+   ]
+  },
+  {
+   "id": "abs158",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": 0.8615277205494389,
+   "base_pnl": -0.14296116726456617,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "at_support",
+    "absorption_seen",
+    "oi_flush",
+    "crowd_short",
+    "btc_supportive",
+    "strong_reaction"
+   ]
+  },
+  {
+   "id": "abs159",
+   "setup": "absorption",
+   "take": true,
+   "trader_pnl": -1.7986197385030396,
+   "base_pnl": -2.3094908718530793,
+   "status": "сделка",
+   "confidence": 3,
+   "reasons": [
+    "trend_htf_with",
+    "oi_flush",
+    "absorption_seen",
+    "btc_supportive",
+    "at_support"
+   ]
+  }
+ ]
+}
