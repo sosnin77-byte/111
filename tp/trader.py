@@ -14,6 +14,9 @@
 
     python -m tp.trader sample                     # results/trader/events.json + снимки
     python -m tp.trader evaluate decisions.json    # results/trader/evaluation.json
+    python -m tp.trader postmortem liq_flush       # вскрытие: 15 прибыльных и 15 убыточных сделок
+
+Цикл пары «супертрейдер + изобретатель» — .claude/workflows/duo-cycle.js.
 """
 from __future__ import annotations
 
@@ -48,8 +51,9 @@ def _cohort(sym: str) -> str:
 
 
 def snapshot(df: pd.DataFrame, i: int, d: int, tf: str, btc: pd.DataFrame | None,
-             setup, sym: str) -> str:
-    """Текстовый снимок рынка на закрытии бара i. Ничего после бара i."""
+             setup, sym: str, after: int = 0) -> str:
+    """Текстовый снимок рынка на закрытии бара i. Ничего после бара i, кроме случая after > 0
+    (вскрытие сделок: после таблицы добавляются after баров после сигнала, помеченные +1, +2 …)."""
     past = df.iloc[: i + 1]
     c0 = past["close"].iloc[-1]
     n = BARS.get(tf, 48)
@@ -104,7 +108,14 @@ def snapshot(df: pd.DataFrame, i: int, d: int, tf: str, btc: pd.DataFrame | None
             lines.append(f"BTC: 4 бара {bc(4):+.1f} %, 1 день {bc(bars_day):+.1f} %, "
                          f"7 дней {bc(7 * bars_day):+.1f} %.")
     head = "   # open    high    low     close   V×  Δ%    OI%   ликв L/S % оборота"
-    return "\n".join(lines) + "\n" + head + "\n" + "\n".join(rows)
+    text = "\n".join(lines) + "\n" + head + "\n" + "\n".join(rows)
+    if after:
+        fut = df.iloc[i + 1: i + 1 + after]
+        text += "\n--- ПОСЛЕ СИГНАЛА (для разбора, в момент решения этого не видно) ---\n" + "\n".join(
+            f"{'+' + str(k + 1):>4} {norm(r['open']):7.2f} {norm(r['high']):7.2f} {norm(r['low']):7.2f} "
+            f"{norm(r['close']):7.2f} {r['qv'] / base_qv:5.1f} {r['delta'] / r['qv'] * 100 if r['qv'] else 0:5.0f}"
+            for k, (_, r) in enumerate(fut.iterrows()))
+    return text
 
 
 def sample(n: int = N_PER_SETUP, seed: int = 7) -> list[dict]:
@@ -146,6 +157,53 @@ def sample(n: int = N_PER_SETUP, seed: int = 7) -> list[dict]:
     (OUT / "blind.json").write_text(json.dumps([{"id": e["id"], "snapshot": e["snapshot"]}
                                                 for e in events], ensure_ascii=False, indent=1))
     return events
+
+
+def postmortem(name: str, vi: int, n_each: int = 15, seed: int = 11, pool_name: str = "all") -> list[dict]:
+    """Вскрытие: прибыльные и убыточные сделки сетапа на периоде оптимизации с геометрией плато,
+    снимок до сигнала и путь после него. results/trader/pm_<сетап>.json."""
+    from .placebo import Pool
+    from .research import Universe
+    from .screen import _all_setups
+    _, names = _all_setups(pool_name)
+    setup = names[name]
+    uni = Universe(load_universe("100"))
+    pool = Pool(setup, uni)
+    t = pool.table(vi)
+    off, ex = _plateau_exit(name, vi)
+    btc = load("BTCUSDT", setup.tf)
+    rows = []
+    for j in np.flatnonzero(pool.grid[t.g] < pool.oos_ns):
+        k, d = int(t.sym[j]), int(t.dir[j])
+        i = int(pool.pos[t.g[j], k])
+        b = pool.bars[k]
+        if i < 30 * 24 * (4 if setup.tf == "15m" else 1) or i + 100 >= len(b.c):
+            continue
+        c0, a = b.c[i], b.atr[i]
+        sg = Signals([i], [d]) if off == 0 else Signals(
+            [i], [d], [np.nan], [E_LIMIT if off > 0 else E_STOP], [c0 - d * off * a], [6], [0])
+        r = simulate(b, sg, ex, Costs())
+        if len(r["pnl"]):
+            rows.append((k, i, d, float(r["pnl"][0])))
+    rng = np.random.default_rng(seed)
+    wins = [x for x in rows if x[3] > 0]
+    loss = [x for x in rows if x[3] <= 0]
+    pick = [wins[q] for q in rng.permutation(len(wins))[:n_each]] + \
+           [loss[q] for q in rng.permutation(len(loss))[:n_each]]
+    out = []
+    for k, i, d, pnl in pick:
+        sym = pool.syms[k]
+        df = uni._c[(sym, setup.tf)].df
+        out.append({"id": f"pm{len(out):03d}", "pnl_pct": round(pnl, 3), "result": "прибыль" if pnl > 0 else "убыток",
+                     "snapshot": snapshot(df, i, d, setup.tf, btc, setup, sym, after=ex.time_exit or 24)})
+    rng.shuffle(out)
+    meta = {"setup": name, "variant": setup.variants[vi], "geometry": {"entry_atr": off, **{
+        k: v for k, v in ex.__dict__.items() if k in ("sl_atr", "tp_r", "time_exit")}},
+        "is_trades": len(rows), "is_win_rate": round(len(wins) / max(len(rows), 1), 3),
+        "is_mean_pct": round(float(np.mean([x[3] for x in rows])) if rows else 0.0, 3)}
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / f"pm_{name}.json").write_text(json.dumps({"meta": meta, "cases": out}, ensure_ascii=False, indent=1))
+    return out
 
 
 def _plateau_exit(name: str, vi: int) -> tuple[float, Exit]:
@@ -243,9 +301,14 @@ def evaluate(decisions: list[dict], costs: Costs = Costs()) -> dict:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["sample", "evaluate"])
-    ap.add_argument("decisions", nargs="?")
+    ap.add_argument("cmd", choices=["sample", "evaluate", "postmortem"])
+    ap.add_argument("decisions", nargs="?", help="evaluate: файл решений; postmortem: имя сетапа")
+    ap.add_argument("--variant", type=int, default=None)
     a = ap.parse_args()
+    if a.cmd == "postmortem":
+        vi = a.variant if a.variant is not None else PICK.get(a.decisions, 0)
+        print(len(postmortem(a.decisions, vi)), "случаев;", OUT / f"pm_{a.decisions}.json")
+        return
     if a.cmd == "sample":
         ev = sample()
         print(len(ev), "событий;", OUT / "blind.json")
