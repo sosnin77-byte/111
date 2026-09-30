@@ -180,13 +180,36 @@ def run_setup(setup: Setup, uni: Universe, costs: Costs = Costs(), log=print) ->
     return out
 
 
+def signal_counts(setup: Setup, uni: Universe) -> list[dict]:
+    """Сколько сигналов даёт каждый вариант (до сетки выходов): на оптимизации, на отложенном
+    периоде, число монет с сигналами. Нужно, чтобы пороги калибровать по частоте, не по прибыли."""
+    oos = pd.Timestamp(setup.oos_start, tz="UTC")
+    out = [{"variant": v, "is": 0, "oos": 0, "coins": 0} for v in setup.variants]
+    for _, f in uni.frames(setup.tf):
+        for vi, var in enumerate(setup.variants):
+            sig = setup.signals(f, **var)
+            if len(sig.i):
+                t = f.df.index[sig.i]
+                out[vi]["is"] += int((t < oos).sum())
+                out[vi]["oos"] += int((t >= oos).sum())
+                out[vi]["coins"] += 1
+    return out
+
+
 def main():
     from .fetch import load_universe
     ap = argparse.ArgumentParser()
     ap.add_argument("--setups", nargs="*")
     ap.add_argument("--only", nargs="*")
+    ap.add_argument("--counts", action="store_true", help="только посчитать сигналы")
     a = ap.parse_args()
     uni = Universe(a.only or load_universe())
+    if a.counts:
+        for s in ([BY_NAME[n] for n in a.setups] if a.setups else SETUPS):
+            for c in signal_counts(s, uni):
+                print(f"{s.name:17s} {str(c['variant']):36s} IS {c['is']:6d}  "
+                      f"OOS {c['oos']:5d}  монет {c['coins']}", flush=True)
+        return
     for s in ([BY_NAME[n] for n in a.setups] if a.setups else SETUPS):
         r = run_setup(s, uni)
         print(f"  лучшие: {len(r['best'])}, лучшие лонги: {len(r['best_long'])}")
