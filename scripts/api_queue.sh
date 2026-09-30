@@ -4,7 +4,12 @@
 # Лог: logs/api_queue.log, итоги этапов — в logs/night.log.
 cd "$(dirname "$0")/.."
 log() { echo "[$(date -u +%H:%M)] очередь API: $*" >> logs/night.log; }
-step() { log "$1"; shift; "$@" >> logs/api_queue.log 2>&1; }
+# сделанные шаги помнит в logs/queue_done.txt: после перезапуска контейнера не повторяет их
+step() {
+  grep -qxF "$1" logs/queue_done.txt 2>/dev/null && return
+  log "$1"; local t="$1"; shift
+  "$@" >> logs/api_queue.log 2>&1 && [ "${t#дозапись}" = "$t" ] && echo "$t" >> logs/queue_done.txt
+}
 while ! grep -q "выгрузка других рынков завершена" logs/night.log; do sleep 60; done
 F="python -m tp.fetch all --rpm 560 --workers 12"
 step "контекст: макро, ETF, onchain" python -m tp.collect context
