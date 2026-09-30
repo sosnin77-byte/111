@@ -202,7 +202,14 @@ def main():
     ap.add_argument("--setups", nargs="*")
     ap.add_argument("--only", nargs="*")
     ap.add_argument("--counts", action="store_true", help="только посчитать сигналы")
+    ap.add_argument("--pool", choices=["main", "hyp", "all"], default="main",
+                    help="main — 11 сетапов tp/setups.py, hyp — 100 гипотез tp/hyp, all — все")
     a = ap.parse_args()
+    global BY_NAME, SETUPS
+    if a.pool != "main":
+        from . import hyp
+        SETUPS = (SETUPS if a.pool == "all" else []) + hyp.HYP
+        BY_NAME = {**BY_NAME, **hyp.BY_NAME}
     uni = Universe(a.only or load_universe())
     if a.counts:
         for s in ([BY_NAME[n] for n in a.setups] if a.setups else SETUPS):

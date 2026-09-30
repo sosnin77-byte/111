@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from tp.engine import R_BE, R_SL, R_TIME, R_TP, R_TRAIL, Bars, Costs, Exit, Signals, simulate
+from tp.engine import (E_LIMIT, E_MARKET, E_STOP, R_BE, R_SL, R_TIME, R_TP, R_TRAIL, Bars, Costs,
+                       Exit, Signals, simulate)
 
 ZERO = Costs(fee_maker=0.0, fee_taker=0.0, slip=0.0)
 
@@ -125,3 +126,70 @@ def test_stop_on_limit_fill_bar_is_checked():
               tp_frac=(1, 0, 0))
     r = run(bars(rows), 0, 1, ex)
     assert r["reason"][0] == R_SL
+
+
+# ---------------------------------------------------------------- вход, заданный сигналом
+def sig1(i, d, kind, px=np.nan, ttl=0, wait=0, stop=np.nan):
+    return Signals([i], [d], [stop], [kind], [px], [ttl], [wait])
+
+
+EX1 = Exit(sl_atr=1, tp_r=(2, 0, 0), tp_frac=(1, 0, 0), time_exit=0)
+
+
+def test_signal_limit_at_own_price():
+    # лимитка на 99.5, бар 2 до неё не доходит, бар 3 доходит; дальше тейк 101.5
+    b = bars([FLAT, FLAT, (100, 100.3, 99.7, 100), (100, 100.1, 99.4, 99.6),
+              (99.6, 101.6, 99.6, 101.5), FLAT])
+    r = simulate(b, sig1(0, 1, E_LIMIT, px=99.5, ttl=5), EX1, ZERO)
+    assert pd.Timestamp(r["entry_time"][0]) == pd.Timestamp("2026-01-01 03:00")
+    assert r["reason"][0] == R_TP
+    assert r["pnl"][0] == pytest.approx((101.5 / 99.5 - 1) * 100)
+
+
+def test_signal_limit_expires():
+    b = bars([FLAT, FLAT, FLAT, (100, 100.1, 99.4, 99.6), FLAT])
+    r = simulate(b, sig1(0, 1, E_LIMIT, px=99.5, ttl=2), EX1, ZERO)
+    assert len(r["pnl"]) == 0
+
+
+def test_signal_limit_already_marketable_fills_at_open():
+    b = bars([FLAT, (100.1, 100.2, 99.9, 100), FLAT])
+    r = simulate(b, sig1(0, 1, E_LIMIT, px=100.5, ttl=3), EX1, ZERO)
+    assert pd.Timestamp(r["entry_time"][0]) == pd.Timestamp("2026-01-01 01:00")
+    assert r["pnl"][0] == pytest.approx((100 / 100.1 - 1) * 100)      # по времени/концу: close 100
+
+
+def test_signal_stop_entry_breakout():
+    # стоп-ордер на 100.5: бар 1 не доходит, бар 2 пробивает, вход по 100.5, тейк 102.5
+    b = bars([FLAT, FLAT, (100.2, 100.8, 100.1, 100.7), (100.7, 102.6, 100.6, 102.5), FLAT])
+    r = simulate(b, sig1(0, 1, E_STOP, px=100.5, ttl=5), EX1, ZERO)
+    assert pd.Timestamp(r["entry_time"][0]) == pd.Timestamp("2026-01-01 02:00")
+    assert r["reason"][0] == R_TP
+    assert r["pnl"][0] == pytest.approx((102.5 / 100.5 - 1) * 100)
+
+
+def test_signal_stop_entry_gap_fills_at_open():
+    b = bars([FLAT, FLAT, (101, 101.2, 100.9, 101), FLAT])
+    r = simulate(b, sig1(0, 1, E_STOP, px=100.5, ttl=5), EX1, ZERO)
+    assert pd.Timestamp(r["entry_time"][0]) == pd.Timestamp("2026-01-01 02:00")
+    assert r["pnl"][0] == pytest.approx((100 / 101 - 1) * 100)
+
+
+def test_signal_market_after_wait():
+    b = bars([FLAT, FLAT, FLAT, (100.3, 100.4, 100.2, 100.3), FLAT])
+    r = simulate(b, sig1(0, -1, E_MARKET, wait=2), EX1, ZERO)
+    assert pd.Timestamp(r["entry_time"][0]) == pd.Timestamp("2026-01-01 03:00")
+    assert r["dir"][0] == -1
+
+
+def test_sig_helper_entry_fields():
+    from tp.setups import _sig
+    idx = pd.date_range("2026-01-01", periods=5, freq="1h", tz="UTC")
+    lm = pd.Series([False, True, False, False, False], idx)
+    sm = pd.Series([False, False, False, True, False], idx)
+    px = pd.Series([1.0, 2.0, 3.0, 4.0, 5.0], idx)
+    s = _sig(lm, sm, entry="limit", long_px=px, short_px=px * 10, ttl=4, wait=1)
+    assert list(s.i) == [1, 3] and list(s.dir) == [1, -1]
+    assert list(s.px) == [2.0, 40.0] and list(s.kind) == [E_LIMIT, E_LIMIT]
+    assert list(s.ttl) == [4, 4] and list(s.wait) == [1, 1]
+    assert list(s.take(np.array([False, True])).i) == [3]

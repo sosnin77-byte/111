@@ -83,26 +83,45 @@ class F:
                                         (d["high"] - d["low"]).replace(0, np.nan)))
 
 
+_KIND = {"default": 0, "market": 1, "limit": 2, "stop": 3}
+
+
 def _sig(long_mask: pd.Series, short_mask: pd.Series, long_stop=None, short_stop=None,
-         cooldown: int = 0) -> Signals:
+         cooldown: int = 0, entry: str = "default", long_px=None, short_px=None,
+         ttl: int = 0, wait: int = 0) -> Signals:
+    """Маски лонгов и шортов в сигналы.
+
+    long_stop/short_stop — структурный стоп (цена на каждом баре) или None.
+    entry — способ входа: "default" (как в сетке выходов: рынок или лимитка -X ATR),
+    "market" (open следующего бара), "limit" (лимитка по long_px/short_px),
+    "stop" (стоп-ордер на пробой long_px/short_px). ttl — сколько баров живёт ордер
+    (0 — как в сетке выходов), wait — сколько баров ждать перед выставлением ордера.
+    """
     lm = long_mask.fillna(False).to_numpy(bool)
     sm = short_mask.fillna(False).to_numpy(bool)
     both = lm & sm
     lm, sm = lm & ~both, sm & ~both
     i = np.flatnonzero(lm | sm)
     d = np.where(lm[i], 1, -1)
-    st = np.full(len(i), np.nan)
-    if long_stop is not None:
-        st = np.where(d == 1, np.asarray(long_stop, float)[i], st)
-    if short_stop is not None:
-        st = np.where(d == -1, np.asarray(short_stop, float)[i], st)
+
+    def pick(lv, sv):
+        out = np.full(len(i), np.nan)
+        if lv is not None:
+            out = np.where(d == 1, np.asarray(lv, float)[i], out)
+        if sv is not None:
+            out = np.where(d == -1, np.asarray(sv, float)[i], out)
+        return out
+
+    st = pick(long_stop, short_stop)
+    px = pick(long_px, short_px)
     if cooldown and len(i):
         keep = [0]
         for q in range(1, len(i)):
             if i[q] - i[keep[-1]] > cooldown:
                 keep.append(q)
-        i, d, st = i[keep], d[keep], st[keep]
-    return Signals(i, d, st)
+        i, d, st, px = i[keep], d[keep], st[keep], px[keep]
+    n = len(i)
+    return Signals(i, d, st, np.full(n, _KIND[entry]), px, np.full(n, ttl), np.full(n, wait))
 
 
 def _ok(df, cols):
@@ -293,8 +312,7 @@ class Setup:
     def signals(self, f: F, **params) -> Signals:
         ok = _ok(f.df, self.needs).to_numpy()
         s = self.fn(f, **params)
-        keep = ok[s.i]
-        return Signals(s.i[keep], s.dir[keep], s.stop[keep])
+        return s.take(ok[s.i])
 
 
 # Отложенные периоды: примерно последняя четверть доступной истории каждого набора.

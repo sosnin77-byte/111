@@ -1,11 +1,18 @@
 """Бэктест сделок по сигналам на барах одной монеты.
 
 Условности (консервативные):
-- сигнал возникает на закрытии бара i, рыночный вход по open[i+1] (тейкер плюс
-  проскальзывание) либо лимитный откат к close[i] - dir*off*ATR, живущий ttl баров (мейкер);
+- сигнал возникает на закрытии бара i. Способ входа задаёт сам сигнал (Signals.kind) или,
+  если не задал, настройка выхода (Exit.entry):
+  * рынок — open[i+1+wait] (тейкер плюс проскальзывание);
+  * лимитка — по цене сигнала px (или close[i] - dir*off*ATR из Exit), ордер выставляется
+    после wait баров и живёт ttl баров, исполнение мейкерское по своей цене; если цена
+    лимитки уже хуже рынка на момент выставления, ордер исполняется сразу по open как рыночный;
+  * стоп-ордер на пробой — срабатывает, когда бар торгует через px, исполнение по худшей из
+    px и open (тейкер плюс проскальзывание); если px уже пройдена, вход по open как рыночный;
 - внутри бара сначала проверяется стоп, потом тейки: если бар задел и стоп, и тейк,
   считаем, что сработал стоп;
-- на баре исполнения лимитки тейки не проверяются: неизвестно, был ли хай до входа;
+- на баре исполнения лимитки или стоп-ордера тейки не проверяются: неизвестно, что было
+  раньше внутри бара; стоп на этом баре проверяется (консервативно);
 - перенос в безубыток и трейлинг действуют со следующего бара;
 - тейки мейкерские по своей цене, стоп, трейлинг и выход по времени тейкерские с
   проскальзыванием, на гэпе стоп исполняется по open;
@@ -23,6 +30,8 @@ import numpy as np
 from numba import njit
 
 REASONS = ("SL", "BE", "TRAIL", "TP", "TIME", "END")
+# способ входа сигнала (Signals.kind)
+E_DEFAULT, E_MARKET, E_LIMIT, E_STOP = range(4)
 R_SL, R_BE, R_TRAIL, R_TP, R_TIME, R_END = range(6)
 
 
@@ -69,6 +78,7 @@ class Costs:
 
 @njit(cache=True)
 def _simulate(o, h, l, c, atr, fund, sig_i, sig_dir, sig_stop,
+              sig_kind, sig_px, sig_ttl, sig_wait,
               entry_mode, entry_off, entry_ttl,
               sl_atr, sl_buf, sl_max_atr, tp_r, tp_frac, be, trail_atr, trail_after,
               time_exit, fee_maker, fee_taker, slip, lev, mmr):
@@ -91,22 +101,51 @@ def _simulate(o, h, l, c, atr, fund, sig_i, sig_dir, sig_stop,
         if not (a > 0):
             continue
         # --- вход
+        kind = sig_kind[s]
+        px = sig_px[s]
+        ttl = sig_ttl[s]
+        if kind == E_DEFAULT:
+            if entry_mode == 0:
+                kind = E_MARKET
+            else:
+                kind = E_LIMIT
+                px = c[i] - d * entry_off * a
+                ttl = entry_ttl
+        if ttl <= 0:
+            ttl = entry_ttl
+        t0 = i + 1 + sig_wait[s]          # первый бар, на котором ордер может исполниться
+        if t0 >= n or t0 <= busy:
+            continue
+        if kind != E_MARKET and not (px > 0):
+            continue
+        # ордер уже «в деньгах» на момент выставления — исполняется по open как рыночный
+        if kind == E_LIMIT and d * (px - c[t0 - 1]) >= 0:
+            kind = E_MARKET
+        if kind == E_STOP and d * (c[t0 - 1] - px) >= 0:
+            kind = E_MARKET
         j = -1
         ep = 0.0
         fee_in = fee_taker
-        if entry_mode == 0:
-            j = i + 1
+        if kind == E_MARKET:
+            j = t0
             ep = o[j] * (1.0 + d * slip)
-        else:
-            px = c[i] - d * entry_off * a
-            for t in range(i + 1, min(n, i + 1 + entry_ttl)):
+        elif kind == E_LIMIT:
+            for t in range(t0, min(n, t0 + ttl)):
                 if (d == 1 and l[t] <= px) or (d == -1 and h[t] >= px):
                     j = t
                     ep = px
                     fee_in = fee_maker
                     break
-            if j < 0:
-                continue
+        else:
+            for t in range(t0, min(n, t0 + ttl)):
+                if (d == 1 and h[t] >= px) or (d == -1 and l[t] <= px):
+                    j = t
+                    ep = max(px, o[t]) if d == 1 else min(px, o[t])
+                    ep = ep * (1.0 + d * slip)
+                    break
+        if j < 0:
+            continue
+        market_fill = kind == E_MARKET
         # --- стоп
         if sl_atr > 0:
             dist = sl_atr * a
@@ -130,7 +169,7 @@ def _simulate(o, h, l, c, atr, fund, sig_i, sig_dir, sig_stop,
         nxt = 0
         tp1 = False
         cur = stop
-        kind = R_SL
+        why = R_SL
         ext = ep
         reason = R_END
         k = j
@@ -148,9 +187,9 @@ def _simulate(o, h, l, c, atr, fund, sig_i, sig_dir, sig_stop,
                 xp = xp * (1.0 - d * slip)
                 pnl += rem * (d * (xp / ep - 1.0) - fee_taker * xp / ep)
                 rem = 0.0
-                reason = kind
+                reason = why
                 break
-            if entry_mode == 0 or k > j:
+            if market_fill or k > j:
                 while nxt < 3 and tp_frac[nxt] > 0:
                     tp = tp_px[nxt]
                     if (d == 1 and h[k] >= tp) or (d == -1 and l[k] <= tp):
@@ -176,7 +215,7 @@ def _simulate(o, h, l, c, atr, fund, sig_i, sig_dir, sig_stop,
                 bep = ep * (1.0 + d * (fee_in + fee_taker + slip))
                 if d * (bep - cur) > 0:
                     cur = bep
-                    kind = R_BE
+                    why = R_BE
             if d == 1:
                 ext = max(ext, h[k])
             else:
@@ -185,7 +224,7 @@ def _simulate(o, h, l, c, atr, fund, sig_i, sig_dir, sig_stop,
                 tsp = ext - d * trail_atr * atr[k]
                 if d * (tsp - cur) > 0:
                     cur = tsp
-                    kind = R_TRAIL
+                    why = R_TRAIL
             k += 1
         if rem > 0:
             k = n - 1
@@ -227,15 +266,27 @@ class Signals:
     i: np.ndarray                       # индекс сигнального бара
     dir: np.ndarray                     # +1 лонг, -1 шорт
     stop: np.ndarray = field(default=None)  # структурный стоп (цена) или NaN
+    kind: np.ndarray = field(default=None)  # способ входа E_*; E_DEFAULT — как в Exit
+    px: np.ndarray = field(default=None)    # цена лимитки или стоп-ордера на вход
+    ttl: np.ndarray = field(default=None)   # сколько баров живёт ордер; 0 — как в Exit
+    wait: np.ndarray = field(default=None)  # сколько баров ждать перед выставлением ордера
 
     def __post_init__(self):
+        n = len(np.asarray(self.i))
         self.i = np.asarray(self.i, dtype=np.int64)
         self.dir = np.asarray(self.dir, dtype=np.int64)
-        if self.stop is None:
-            self.stop = np.full(len(self.i), np.nan)
-        self.stop = np.asarray(self.stop, dtype=np.float64)
+        self.stop = np.full(n, np.nan) if self.stop is None else np.asarray(self.stop, np.float64)
+        self.kind = np.zeros(n, np.int64) if self.kind is None else np.asarray(self.kind, np.int64)
+        self.px = np.full(n, np.nan) if self.px is None else np.asarray(self.px, np.float64)
+        self.ttl = np.zeros(n, np.int64) if self.ttl is None else np.asarray(self.ttl, np.int64)
+        self.wait = np.zeros(n, np.int64) if self.wait is None else np.asarray(self.wait, np.int64)
         order = np.argsort(self.i, kind="stable")
-        self.i, self.dir, self.stop = self.i[order], self.dir[order], self.stop[order]
+        for k in ("i", "dir", "stop", "kind", "px", "ttl", "wait"):
+            setattr(self, k, getattr(self, k)[order])
+
+    def take(self, keep) -> "Signals":
+        return Signals(self.i[keep], self.dir[keep], self.stop[keep], self.kind[keep],
+                       self.px[keep], self.ttl[keep], self.wait[keep])
 
 
 def simulate(bars: Bars, sig: Signals, ex: Exit, costs: Costs = Costs()) -> dict:
@@ -243,6 +294,7 @@ def simulate(bars: Bars, sig: Signals, ex: Exit, costs: Costs = Costs()) -> dict
     tp_frac = np.asarray(ex.tp_frac, dtype=np.float64)
     e, x, d, pnl, risk, why = _simulate(
         bars.o, bars.h, bars.l, bars.c, bars.atr, bars.fund, sig.i, sig.dir, sig.stop,
+        sig.kind, sig.px, sig.ttl, sig.wait,
         0 if ex.entry == "market" else 1, ex.entry_off, ex.entry_ttl,
         ex.sl_atr, ex.sl_buf, ex.sl_max_atr, tp_r, tp_frac, ex.be, ex.trail_atr,
         ex.trail_after_tp1, ex.time_exit, costs.fee_maker, costs.fee_taker, costs.slip,
