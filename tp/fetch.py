@@ -56,7 +56,18 @@ def datasets(sym: str) -> dict:
                    {"ratio_type": "top_position", "period": "5m"}, "2026-04-01"),
         # ликвидации по всем биржам, где торгуется монета
         "liq_5m": (f"/liquidations/{sym}/bars", "5m", 5000, {"interval": "5m"}, "2026-06-01"),
+        # другие рынки (12 месяцев, аудит API): спот Binance с taker_buy (спотовый CVD, базис),
+        # Bybit и Hyperliquid (кто ведёт цену), Coinbase (премия; USD-пары, алиас USDT)
+        "spot_1h": (f"/candles/binance/{sym}", "1h", 1000, {"interval": "1h"}, HISTORY_START),
+        "bybitf_1h": (f"/candles/bybitf/{sym}", "1h", 1000, {"interval": "1h"}, HISTORY_START),
+        "hl_1h": (f"/candles/hyperliquid/{sym}", "1h", 1000, {"interval": "1h"}, HISTORY_START),
+        "cb_1h": (f"/candles/coinbase/{sym}", "1h", 1000, {"interval": "1h"}, HISTORY_START),
+        "funding_bybitf": (f"/funding/bybitf/{sym}", "1h", 1000, {}, HISTORY_START),
     }
+
+
+BASE_SETS = ("candles_1h", "candles_5m", "funding", "oi_1h", "oi_5m", "ls_global", "ls_top", "liq_5m")
+EXT_SETS = ("spot_1h", "bybitf_1h", "hl_1h", "cb_1h", "funding_bybitf")
 
 
 def path_for(name: str, sym: str) -> Path:
@@ -157,7 +168,7 @@ def main():
         print(build_universe(client, a.top))
         return
     syms = a.only or load_universe(a.universe)
-    names = a.sets or list(datasets("BTCUSDT"))
+    names = a.sets or [n for n in datasets("BTCUSDT") if n in BASE_SETS]
     end = int(time.time() * 1000)
     jobs = [(s, n) for s in syms for n in names]
     t0 = time.time()
