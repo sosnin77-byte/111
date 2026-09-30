@@ -1,8 +1,12 @@
 """Выгрузка истории TRADER.PRO по топ-100 фьючерсам Binance USDT-M в data/raw.
 
     python -m tp.fetch universe            # список топ-100 по обороту за 30 дней
-    python -m tp.fetch all                 # все наборы данных по списку
+    python -m tp.fetch universe --top 400  # расширенный список (data/universe_400.json)
+    python -m tp.fetch all                 # все наборы данных по списку топ-100
+    python -m tp.fetch all --universe 400  # по расширенному списку (скачанное только дописывается)
     python -m tp.fetch all --only BTCUSDT  # одна монета
+
+Срез списка по рангам: load_universe("101-400") — средние и мелкие монеты отдельно от топа.
 
 Каждый ряд пишется в data/raw/<набор>/<SYMBOL>.parquet. Повторный запуск
 дописывает только недостающий хвост.
@@ -84,6 +88,10 @@ def fetch_one(client: Client, sym: str, name: str, end_ms: int) -> int:
     return len(rows)
 
 
+def universe_path(top: int) -> Path:
+    return UNIVERSE if top == 100 else ROOT / f"universe_{top}.json"
+
+
 def build_universe(client: Client, top: int = 100) -> list[str]:
     resp = client.get("/instruments", exchange=EX)
     # ответ: {"count": N, "exchanges": {"binancef": [{"symbol", "status", "has_data", ...}]}}
@@ -113,32 +121,42 @@ def build_universe(client: Client, top: int = 100) -> list[str]:
                 print("skip", futs[fu], e)
     ranked = sorted(vols, key=vols.get, reverse=True)[:top]
     ROOT.mkdir(parents=True, exist_ok=True)
-    UNIVERSE.write_text(json.dumps(
+    universe_path(top).write_text(json.dumps(
         {"asof": pd.Timestamp.now("UTC").isoformat(), "symbols": ranked,
          "quote_volume_30d": {s: vols[s] for s in ranked}}, indent=1))
     return ranked
 
 
-def load_universe() -> list[str]:
-    return json.loads(UNIVERSE.read_text())["symbols"]
+def load_universe(spec: str | int = "100") -> list[str]:
+    """Список монет: "100" — топ-100 (data/universe.json), "400" — топ-400, "101-400" — ранги
+    с 101 по 400 включительно из самого длинного подходящего списка."""
+    spec = str(spec)
+    lo, hi = (int(x) for x in spec.split("-")) if "-" in spec else (1, int(spec))
+    for top in sorted({100, 200, 300, 400, 500, hi}):
+        f = universe_path(top)
+        if top >= hi and f.exists():
+            return json.loads(f.read_text())["symbols"][lo - 1:hi]
+    raise FileNotFoundError(f"нет списка монет на {hi}: python -m tp.fetch universe --top {hi}")
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["universe", "all", "account"])
     ap.add_argument("--only", nargs="*")
+    ap.add_argument("--top", type=int, default=100, help="сколько монет в списке (universe)")
+    ap.add_argument("--universe", default="100", help='список для выгрузки: "100", "400", "101-400"')
     ap.add_argument("--sets", nargs="*", help="какие наборы качать (по умолчанию все)")
     ap.add_argument("--rpm", type=int, default=580)
-    ap.add_argument("--workers", type=int, default=10)
+    ap.add_argument("--workers", type=int, default=14)
     a = ap.parse_args()
     client = Client(rpm=a.rpm)
     if a.cmd == "account":
         print(json.dumps(client.account(), indent=1, ensure_ascii=False))
         return
     if a.cmd == "universe":
-        print(build_universe(client))
+        print(build_universe(client, a.top))
         return
-    syms = a.only or load_universe()
+    syms = a.only or load_universe(a.universe)
     names = a.sets or list(datasets("BTCUSDT"))
     end = int(time.time() * 1000)
     jobs = [(s, n) for s in syms for n in names]

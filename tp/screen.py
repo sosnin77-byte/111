@@ -268,6 +268,8 @@ def main():
     ap.add_argument("--setups", nargs="*")
     ap.add_argument("--pool", choices=["main", "hyp", "all"], default="main")
     ap.add_argument("--only", nargs="*")
+    ap.add_argument("--universe", default="100",
+                    help='монеты: "100" — топ-100, "400" — топ-400, "101-400" — средние и мелкие')
     ap.add_argument("--runs", type=int, default=100)
     a = ap.parse_args()
     pool = list(SETUPS) if a.pool in ("main", "all") else []
@@ -281,7 +283,7 @@ def main():
         except Exception as e:           # гипотезы ещё пишутся
             print("гипотезы недоступны:", e)
     todo = [names[n] for n in a.setups] if a.setups else pool
-    uni = Universe(a.only or load_universe())
+    uni = Universe(a.only or load_universe(a.universe))
     summary = []
     for s in todo:
         try:
