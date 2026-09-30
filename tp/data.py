@@ -4,7 +4,8 @@
     open high low close volume qv tbq      свечи, qv — оборот в USDT,
                                            tbq — покупки тейкеров в USDT
     delta                                  tbq - (qv - tbq), дельта агрессора
-    oi                                     открытый интерес в USD на закрытии бара
+    oi                                     открытый интерес в контрактах (в монетах) на закрытии бара
+    oi_usd                                 открытый интерес в USD (контракты × цена — повторяет цену)
     fund                                   ставка фандинга, списанная в начале бара, иначе 0
     fund_last                              последняя известная ставка
     ls_global, ls_top                      доля лонгов (0..1): все аккаунты / топ по позициям
@@ -88,16 +89,22 @@ def load(sym: str, tf: str = "1h", raw: Path = RAW) -> pd.DataFrame | None:
         return None
     idx = c.index
 
-    oi = None
-    for name in (("oi_1h", "oi_5m") if tf in ("1h", "4h") else ("oi_5m", "oi_1h")):
-        d = _read(name, sym, raw)
-        if d is not None:
+    # OI в контрактах (в монетах, поле oi_close) — это позиции; OI в долларах (oi_usd_close)
+    # = контракты × цена и почти повторяет движение цены, поэтому для «набора» и «сброса»
+    # позиций годится только oi. Нет oi_close в файле — берём долларовый (старые выгрузки, тесты).
+    for col, field in (("oi", "oi_close"), ("oi_usd", "oi_usd_close")):
+        ser = None
+        for name in (("oi_1h", "oi_5m") if tf in ("1h", "4h") else ("oi_5m", "oi_1h")):
+            d = _read(name, sym, raw)
+            if d is None:
+                continue
+            f_ = field if field in d else "oi_usd_close"
             # OI-бар с меткой t закрывается в t+шаг: сдвигаем на конец бара
             step = pd.Timedelta("1h" if name == "oi_1h" else "5min")
-            s = _num(d, "oi_usd_close")
-            s.index = s.index + step
-            oi = s if oi is None else oi.combine_first(s)
-    c["oi"] = _last_on(oi, idx, tf) if oi is not None else np.nan
+            s_ = _num(d, f_)
+            s_.index = s_.index + step
+            ser = s_ if ser is None else ser.combine_first(s_)
+        c[col] = _last_on(ser, idx, tf) if ser is not None else np.nan
 
     f = _read("funding", sym, raw)
     if f is not None:
