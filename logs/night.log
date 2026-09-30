@@ -21,3 +21,9 @@
 [19:50] очередь API: фандинг 6 бирж
 [19:57] очередь API: OI всех бирж 1h
 [20:02] очередь API: толпа: top_account и другие биржи
+[20:32] очередь API: CVD других бирж 1h
+[20:38] очередь API: OI всех бирж 5m
+[20:39] commit: reverse engineering on 400 coins
+[20:39] 6/6 обратная инженерия топ-100 заново (OI в контрактах)
+[20:49] commit: reverse engineering top-100 with OI in contracts
+[20:49] ГОТОВО
